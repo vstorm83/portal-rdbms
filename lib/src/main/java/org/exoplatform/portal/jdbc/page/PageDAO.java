@@ -17,36 +17,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.gatein.portal.mop.page;
+package org.exoplatform.portal.jdbc.page;
 
-import java.util.Collection;
-import java.util.List;
+import org.gatein.api.page.PageQuery;
 
-import org.exoplatform.portal.mop.SiteKey;
-import org.exoplatform.portal.mop.SiteType;
-import org.exoplatform.portal.mop.page.PageKey;
-import org.exoplatform.portal.mop.page.PageState;
-import org.exoplatform.portal.pom.data.PageData;
+import org.exoplatform.commons.api.persistence.GenericDAO;
+import org.exoplatform.commons.utils.ListAccess;
 
-public interface PageStore {
+public interface PageDAO extends GenericDAO<PageEntity, Long> {
 
-    PageData loadPage(PageKey key);
+    PageEntity findByKey(String pageKey);    
 
-    boolean savePage(PageKey key, PageState state);
-
-    boolean destroyPage(PageKey key);
-
-    PageData clonePage(PageKey src, PageKey dst);
-
-    List<PageKey> findPageKeys(SiteKey siteKey);
-
-    Collection<PageData> findPages(
-            int from,
-            int to,
-            SiteType siteType,
-            String siteName,
-            String pageName,
-            String pageTitle);
-
-    void clear();
+    ListAccess<PageEntity> findByQuery(PageQuery query);
 }

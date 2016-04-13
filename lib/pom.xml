@@ -248,7 +248,7 @@
               <goal>test</goal>
             </goals>
             <configuration>
-	      <skipTests>true</skipTests>
+	      <skipTests>false</skipTests>
               <includes>
                 <include>**/InitContainerTestSuite.java</include>
                 <include>**/AsynMigrationTest.java</include>
