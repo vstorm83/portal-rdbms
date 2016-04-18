@@ -17,16 +17,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.exoplatform.portal.jdbc.page;
-
-import org.gatein.api.page.PageQuery;
+package org.exoplatform.portal.jdbc.dao;
 
 import org.exoplatform.commons.api.persistence.GenericDAO;
 import org.exoplatform.commons.utils.ListAccess;
+import org.exoplatform.portal.jdbc.entity.PageEntity;
+import org.exoplatform.portal.mop.page.PageKey;
+import org.gatein.api.page.PageQuery;
 
-public interface PageDAO extends GenericDAO<PageEntity, Long> {
+public interface PageDAO extends GenericDAO<PageEntity, String> {
 
-    PageEntity findByKey(String pageKey);    
+    PageEntity findByKey(PageKey pageKey);    
 
     ListAccess<PageEntity> findByQuery(PageQuery query);
 }

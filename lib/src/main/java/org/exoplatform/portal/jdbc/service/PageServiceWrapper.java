@@ -1,10 +1,13 @@
-package org.exoplatform.portal.jdbc.page;
+package org.exoplatform.portal.jdbc.service;
 
 import java.util.List;
 
 import org.gatein.common.logging.Logger;
 import org.gatein.common.logging.LoggerFactory;
 
+import org.exoplatform.portal.jdbc.dao.ContainerDAO;
+import org.exoplatform.portal.jdbc.dao.PageDAO;
+import org.exoplatform.portal.jdbc.dao.WindowDAO;
 import org.exoplatform.portal.mop.EventType;
 import org.exoplatform.portal.mop.QueryResult;
 import org.exoplatform.portal.mop.SiteKey;
@@ -26,8 +29,8 @@ public class PageServiceWrapper implements PageService {
     /** . */
     private final ListenerService listenerService;
 
-    public PageServiceWrapper(ListenerService listenerService, PageDAO pageDAO) {
-        this.service = new PageServiceImpl(pageDAO);
+    public PageServiceWrapper(ListenerService listenerService, PageDAO pageDAO, ContainerDAO containerDAO, WindowDAO windowDAO) {
+        this.service = new PageServiceImpl(pageDAO, containerDAO, windowDAO);
         this.listenerService = listenerService;
     }
 
