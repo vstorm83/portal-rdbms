@@ -67,9 +67,6 @@ public class WindowEntity extends ComponentEntity implements Serializable {
   @Column(name = "PROPERTIES", length = 2000)
   private String            properties;
 
-  @Column(name = "ACCESS_PERMISSIONS", length = 2000)
-  private String            accessPermissions;
-
   @Column(name = "APP_TYPE")
   private AppType           appType;
 
@@ -157,14 +154,6 @@ public class WindowEntity extends ComponentEntity implements Serializable {
 
   public void setProperties(String properties) {
     this.properties = properties;
-  }
-
-  public String getAccessPermissions() {
-    return accessPermissions;
-  }
-
-  public void setAccessPermissions(String accessPermissions) {
-    this.accessPermissions = accessPermissions;
   }
 
   public AppType getAppType() {

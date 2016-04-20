@@ -1,4 +1,4 @@
-package lib;
+package org.exoplatform.portal.jdbc.dao;
 
 import org.gatein.api.page.PageQuery;
 import org.gatein.api.site.SiteType;
@@ -7,7 +7,6 @@ import org.exoplatform.component.test.AbstractKernelTest;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
 import org.exoplatform.component.test.ContainerScope;
-import org.exoplatform.portal.jdbc.dao.PageDAO;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
 import org.exoplatform.portal.mop.page.PageKey;
 
@@ -84,6 +83,11 @@ public class PageDAOTest extends AbstractKernelTest {
     entity.setDescription(description);
     entity.setShowMaxWindow(true);
     entity.setEditPermission("testEditPermission");
+    entity.setAccessPermissions("testAccessPermission");
+    entity.setFactoryId("testFactoryId");
+    entity.setMoveAppsPermissions("testMoveApps");
+    entity.setMoveContainersPermissions("testMoveContainer");
+    entity.setPageBody("testPageBody");
     return entity;
   }
   
@@ -97,5 +101,10 @@ public class PageDAOTest extends AbstractKernelTest {
     assertEquals(entity.getOwnerId(), result.getOwnerId());
     assertEquals(entity.getOwnerType(), result.getOwnerType());
     assertEquals(entity.getName(), result.getName());
+    assertEquals(entity.getAccessPermissions(), result.getAccessPermissions());
+    assertEquals(entity.getFactoryId(), result.getFactoryId());
+    assertEquals(entity.getMoveAppsPermissions(), result.getMoveAppsPermissions());
+    assertEquals(entity.getMoveContainersPermissions(), result.getMoveContainersPermissions());
+    assertEquals(entity.getPageBody(), result.getPageBody());
   }
 }

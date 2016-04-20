@@ -54,7 +54,10 @@ public class PageDAOImpl extends GenericDAOJPAImpl<PageEntity, String>implements
 
             @Override
             public PageEntity[] load(int offset, int limit) throws Exception, IllegalArgumentException {
-                return results.subList(offset, offset + limit).toArray(new PageEntity[limit]);
+              if (limit < 0) {
+                limit = getSize();
+              }
+              return results.subList(offset, offset + limit).toArray(new PageEntity[limit]);                
             }
         };
     }

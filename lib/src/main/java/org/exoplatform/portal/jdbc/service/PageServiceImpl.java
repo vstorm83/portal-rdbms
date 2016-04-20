@@ -15,6 +15,7 @@ import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.jdbc.dao.ContainerDAO;
 import org.exoplatform.portal.jdbc.dao.PageDAO;
 import org.exoplatform.portal.jdbc.dao.WindowDAO;
+import org.exoplatform.portal.jdbc.entity.ComponentEntity;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity.TYPE;
 import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
@@ -35,11 +36,13 @@ public class PageServiceImpl implements PageService {
 
   private static Log LOG = ExoLogger.getExoLogger(PageServiceImpl.class);
   
-  private PageDAO store;
+  private PageDAO pageDAO;
   
   private ContainerDAO containerDAO;
   
   private WindowDAO windowDAO;
+  
+  private static Log log = ExoLogger.getExoLogger(PageServiceImpl.class);
 
   /**
    * Create an instance that uses the provided persistence.
@@ -51,7 +54,7 @@ public class PageServiceImpl implements PageService {
     if (pageDAO == null) {
       throw new NullPointerException("No null persistence allowed");
     }
-    this.store = pageDAO;
+    this.pageDAO = pageDAO;
     this.windowDAO = windowDAO;
     this.containerDAO = containerDAO;
   }
@@ -63,7 +66,7 @@ public class PageServiceImpl implements PageService {
     }
 
     //
-    PageEntity entity = store.findByKey(key);
+    PageEntity entity = pageDAO.findByKey(key);
     if (entity != null) {
       return entity.buildPageContext();
     } else {
@@ -105,15 +108,15 @@ public class PageServiceImpl implements PageService {
       throw new NullPointerException();
     }
 
-    PageEntity entity = store.findByKey(page.getKey());
+    PageEntity entity = pageDAO.findByKey(page.getKey());
     // 
     if (entity == null) {
       entity = buildPageEntityContext(null, page);
-      store.create(entity);
+      pageDAO.create(entity);
       return true;
     } else {
       entity = buildPageEntityContext(entity, page);
-      store.update(entity);
+      pageDAO.update(entity);
       return false;
     }
   }
@@ -125,18 +128,12 @@ public class PageServiceImpl implements PageService {
     }
 
     //
-    PageEntity page = store.findByKey(key); 
+    PageEntity page = pageDAO.findByKey(key); 
     if (page != null) {
       String pageBody = page.getPageBody();
-      JSONParser parser = new JSONParser();
-      JSONArray children;
-      try {
-        children = (JSONArray)parser.parse(pageBody);
-      } catch (ParseException e) {
-        throw new IllegalStateException("Can't parse page body");
-      }
+      JSONArray children = parse(pageBody);
       deleteChildren(children);
-      store.delete(page);
+      pageDAO.delete(page);
       return true;
     } else {
       return false;
@@ -157,13 +154,7 @@ public class PageServiceImpl implements PageService {
         
         ContainerEntity container = containerDAO.find(id);
         if (container != null) {
-          JSONParser parser = new JSONParser();
-          JSONArray dashboardChilds;
-          try {
-            dashboardChilds = (JSONArray)parser.parse(container.getContainerBody());
-          } catch (ParseException e) {
-            throw new IllegalStateException("Can't parse dashboard body");
-          }
+          JSONArray dashboardChilds = parse(container.getContainerBody());
           deleteChildren(dashboardChilds);
           
           containerDAO.delete(container);
@@ -179,8 +170,7 @@ public class PageServiceImpl implements PageService {
     }
   }
 
-  @Override
-  
+  @Override  
   public PageContext clone(PageKey src, PageKey dst) {
     if (src == null) {
       throw new NullPointerException("No null source accepted");
@@ -190,30 +180,126 @@ public class PageServiceImpl implements PageService {
     }
 
     //TODO check no source site
-    PageEntity pageSrc = store.findByKey(src);
+    PageEntity pageSrc = pageDAO.findByKey(src);
     if (pageSrc == null) {
       throw new PageServiceException(PageError.CLONE_NO_SRC_PAGE, "Could not clone non existing page " + src.getName()
         + " from site of type " + src.getSite().getType() + " with id " + src.getSite().getName());
     } else {
       //TODO CHECK no destination site
-      PageEntity pageDst = store.findByKey(dst);
+      PageEntity pageDst = pageDAO.findByKey(dst);
       if (pageDst != null) {
         throw new PageServiceException(PageError.CLONE_DST_ALREADY_EXIST, "Could not clone page " + dst.getName()
                                        + "to existing page " + dst.getSite().getType() + " with id " + dst.getSite().getName());
       } else {
-        pageDst = buildPageEntityContext(null, pageSrc.buildPageContext());
-        //TODO create new instance of container and window
-        pageDst.setPageBody(pageSrc.getPageBody());
+        pageDst = buildPageEntityContext(null, pageSrc.buildPageContext());        
+        List<ComponentEntity> children = clone(pageSrc.getPageBody());
+        pageDst.setChildren(children);
+        pageDst.setPageBody(((JSONArray)pageDst.toJSON().get("children")).toJSONString());
         //
         SiteKey siteKey = dst.getSite();
         pageDst.setOwnerId(siteKey.getName());
         pageDst.setOwnerType(siteKey.getType());
         pageDst.setName(dst.getName());
         
-        store.create(pageDst);
+        pageDAO.create(pageDst);
         return pageDst.buildPageContext();
       }      
     }    
+  }
+
+  private List<ComponentEntity> clone(String pageBody) {
+    List<ComponentEntity> results = new LinkedList<ComponentEntity>();
+    
+    JSONArray children = parse(pageBody);
+    
+    for (Object child : children) {
+      JSONObject c = (JSONObject)child;
+      String id = c.get("id").toString();
+      TYPE type = TYPE.valueOf(c.get("type").toString());
+      
+      switch (type) {
+      case CONTAINER:
+        ContainerEntity srcC = containerDAO.find(id);
+        ContainerEntity dstC = clone(srcC);        
+        
+        JSONArray descendants = parse(srcC.getContainerBody());
+        if (descendants.size() > 0) {
+          //dashboard
+          dstC.setChildren(clone(srcC.getContainerBody()));
+        } else {
+          //normal container
+          dstC.setChildren(clone(((JSONArray)c.get("children")).toJSONString()));
+        }
+        dstC.setContainerBody(((JSONArray)dstC.toJSON().get("children")).toJSONString());
+        
+        containerDAO.create(dstC);
+        results.add(dstC);
+        break;
+      case WINDOW:
+        WindowEntity srcW = windowDAO.find(id);
+        WindowEntity dstW = clone(srcW);
+        
+        windowDAO.create(dstW);
+        results.add(dstW);
+        break;
+      default:
+        throw new IllegalStateException("Can't handle type: " + type);
+      }
+      
+    }
+    return results;
+  }
+
+  private WindowEntity clone(WindowEntity src) {
+    WindowEntity dst = new WindowEntity();    
+    dst.setAppType(src.getAppType());
+    dst.setContentId(src.getContentId());
+    dst.setCustomization(src.getCustomization());    
+    dst.setAccessPermissions(src.getAccessPermissions());
+    dst.setDescription(src.getDescription());
+    dst.setHeight(src.getHeight());
+    dst.setIcon(src.getIcon());
+    dst.setProperties(src.getProperties());
+    dst.setShowApplicationMode(src.isShowApplicationMode());
+    dst.setShowApplicationState(src.isShowApplicationState());
+    dst.setShowInfoBar(src.isShowInfoBar());
+    dst.setTheme(src.getTheme());
+    dst.setTitle(src.getTitle());
+    dst.setWidth(src.getWidth());
+
+    return dst;
+  }
+
+  private JSONArray parse(String body) {
+    JSONParser parser = new JSONParser();
+    JSONArray children;
+    try {
+      children = (JSONArray)parser.parse(body);
+      return children;
+    } catch (ParseException e) {
+      log.error(e);
+      throw new IllegalStateException("Can't parse body: " + body);
+    }
+  }
+
+  private ContainerEntity clone(ContainerEntity src) {
+    ContainerEntity dst = new ContainerEntity();
+
+    dst.setAccessPermissions(src.getAccessPermissions());
+    dst.setDescription(src.getDescription());
+    dst.setFactoryId(src.getFactoryId());
+    dst.setHeight(src.getHeight());
+    dst.setIcon(src.getIcon());
+    dst.setMoveAppsPermissions(src.getMoveAppsPermissions());
+    dst.setMoveContainersPermissions(src.getMoveContainersPermissions());
+    dst.setName(src.getName());
+    dst.setProperties(src.getProperties());
+    dst.setTemplate(src.getTemplate());
+    dst.setTitle(src.getTitle());
+    dst.setWidth(src.getWidth());
+    dst.setContainerBody(src.getContainerBody());
+
+    return dst;
   }
 
   @Override
@@ -224,9 +310,9 @@ public class PageServiceImpl implements PageService {
                                             String pageName,
                                             String pageTitle) {
     PageQuery.Builder builder = new PageQuery.Builder();
-    builder.withDisplayName(pageTitle).withSiteType(org.gatein.api.site.SiteType.forName(siteType.getName())).withSiteName(siteName);
+    builder.withDisplayName(pageTitle).withSiteType(convert(siteType)).withSiteName(siteName);
     builder.withPagination(from, to - from);
-    ListAccess<PageEntity> dataSet = store.findByQuery(builder.build());
+    ListAccess<PageEntity> dataSet = pageDAO.findByQuery(builder.build());
     try {
       ArrayList<PageContext> pages = new ArrayList<PageContext>(dataSet.getSize());
       for (PageEntity data : dataSet.load(from, to - from)) {
@@ -239,6 +325,21 @@ public class PageServiceImpl implements PageService {
     }
   }
   
+  private org.gatein.api.site.SiteType convert(SiteType siteType) {
+    if (siteType == null) {
+      return null;
+    }
+    switch (siteType) {
+    case GROUP:
+      return org.gatein.api.site.SiteType.SPACE;
+    case PORTAL:
+      return org.gatein.api.site.SiteType.SITE;
+    case USER:
+      return org.gatein.api.site.SiteType.DASHBOARD;
+    }
+    return null;
+  }
+
   private PageEntity buildPageEntityContext(PageEntity entity, PageContext page) {
     if (entity == null) {
       entity = new PageEntity();
@@ -250,7 +351,7 @@ public class PageServiceImpl implements PageService {
     entity.setEditPermission(state.getEditPermission());
     entity.setFactoryId(state.getFactoryId());
     entity.setShowMaxWindow(state.getShowMaxWindow());
-    
+
     SiteKey siteKey = page.getKey().getSite();
     entity.setOwnerId(siteKey.getName());
     entity.setOwnerType(siteKey.getType());

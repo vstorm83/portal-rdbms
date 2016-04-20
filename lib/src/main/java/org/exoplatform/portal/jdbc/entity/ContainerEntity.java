@@ -38,7 +38,7 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @ExoEntity
 @Table(name = "PORTAL_CONTAINERS")
 @NamedQueries({
-  @NamedQuery(name = "ContainerEntity.findByIds", query = "SELECT c FROM ContainerEntity c WHERE p.id in (:ids)") })
+  @NamedQuery(name = "ContainerEntity.findByIds", query = "SELECT c FROM ContainerEntity c WHERE c.id in (:ids)") })
 public class ContainerEntity extends ComponentEntity implements Serializable {
 
   private static final long     serialVersionUID = -8045606258160322858L;
