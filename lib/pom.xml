@@ -22,6 +22,9 @@
   <packaging>jar</packaging>
   <name>Portal RDBMS Addon - Library</name>
   <description>Portal RDBMS Addon - Extension Library providing all services</description>
+  <properties>
+  	 <surefire.exo.profiles>hsqldb</surefire.exo.profiles>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>log4j</groupId>
@@ -137,6 +140,17 @@
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
     </dependency>
+    
+    <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-api</artifactId>
+       <version>1.7.5</version>
+   </dependency>
+   <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-simple</artifactId>
+       <version>1.6.4</version>
+   </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -248,14 +262,13 @@
               <goal>test</goal>
             </goals>
             <configuration>
-	      <skipTests>false</skipTests>
-              <includes>
-                <include>**/InitContainerTestSuite.java</include>
-                <include>**/AsynMigrationTest.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/*TestIT.java</exclude>
-              </excludes>
+			    <argLine>-Xms512m -Xmx512m</argLine>
+            	<systemProperties>
+            		<property>
+	                <name>exo.profiles</name>
+	                <value>${surefire.exo.profiles}</value>
+	               </property>
+            	</systemProperties>
             </configuration>
           </execution>
         </executions>

@@ -32,7 +32,7 @@ import org.exoplatform.portal.pom.data.DashboardData;
 public class JDBCDashboardData extends DashboardData {
   
   private static final long serialVersionUID = 3787115053640429206L;
-  private String properties = new JSONObject().toJSONString();
+  private JSONObject properties = new JSONObject();
 
   public JDBCDashboardData(String storageId,
                        String id,
@@ -46,7 +46,7 @@ public class JDBCDashboardData extends DashboardData {
                        String height,
                        List<String> accessPermissions,
                        List<String> moveAppsPermissions,
-                       List<String> moveContainersPermissions, String properties,
+                       List<String> moveContainersPermissions, JSONObject properties,
                        List<ComponentData> children) {
     super(storageId,
           id,
@@ -65,11 +65,11 @@ public class JDBCDashboardData extends DashboardData {
     this.properties = properties;
   }
 
-  public String getProperties() {
+  public JSONObject getProperties() {
     return properties;
   }
 
-  public void setProperties(String properties) {
+  public void setProperties(JSONObject properties) {
     this.properties = properties;
   }
 
@@ -109,7 +109,7 @@ public class JDBCDashboardData extends DashboardData {
                                           null,
                                           Collections.<String> emptyList(),
                                           everyOneSingleton,
-                                          everyOneSingleton, new JSONObject().toJSONString(),
+                                          everyOneSingleton, new JSONObject(),
                                           Collections.unmodifiableList(children));
   }
 

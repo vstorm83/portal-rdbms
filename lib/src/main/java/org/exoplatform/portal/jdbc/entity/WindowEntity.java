@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -73,7 +74,8 @@ public class WindowEntity extends ComponentEntity implements Serializable {
   @Column(name = "CONTENT_ID")
   private String            contentId;
 
-  @Column(name = "CUSTOMIZATION")
+  @Lob
+  @Column(name = "CUSTOMIZATION", length = 10000)
   private byte[]            customization;
 
   public String getTitle() {

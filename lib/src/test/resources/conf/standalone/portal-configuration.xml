@@ -32,7 +32,7 @@
 
 
   <component>
-    <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
+    <key>org.exoplatform.portal.pom.config.POMDataStorage</key>
     <type>org.exoplatform.portal.pom.config.POMDataStorage</type>
   </component>
 
@@ -41,5 +41,9 @@
     <type>org.exoplatform.portal.config.DataStorageImpl</type>
   </component>
 
+  <component>
+    <key>org.exoplatform.services.organization.OrganizationService</key>
+    <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
+  </component>
 
 </configuration>
