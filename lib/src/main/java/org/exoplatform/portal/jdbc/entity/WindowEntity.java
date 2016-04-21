@@ -71,7 +71,7 @@ public class WindowEntity extends ComponentEntity implements Serializable {
   @Column(name = "APP_TYPE")
   private AppType           appType;
 
-  @Column(name = "CONTENT_ID")
+  @Column(name = "CONTENT_ID", length = 200)
   private String            contentId;
 
   @Lob

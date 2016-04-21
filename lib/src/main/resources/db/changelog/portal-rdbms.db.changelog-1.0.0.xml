@@ -1,12 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
   <!-- Managing both DB that use sequences and db that use auto increment -->
-  <property name="autoIncrement" value="true" dbms="mysql,mssql,h2,sybase,db2,hsqldb"/>
-  <property name="autoIncrement" value="false" dbms="oracle,postgresql"/>    
-    
+  <property name="autoIncrement" value="true"
+    dbms="mysql,mssql,h2,sybase,db2,hsqldb" />
+  <property name="autoIncrement" value="false" dbms="oracle,postgresql" />
+
+  <changeSet author="portal" id="1.0.0-1">
+    <createTable tableName="PORTAL_PAGES">
+      <column name="ID" type="VARCHAR(36)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_PAGES" />
+      </column>
+      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
+      <column name="OWNER_TYPE" type="INT"/>
+      <column name="OWNER_ID" type="NVARCHAR(200)"/>
+      <column name="SHOW_MAX_WINDOW" type="BIT" />
+      <column name="DISPLAY_NAME" type="NVARCHAR(200)"/>
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="FACTORY_ID" type="NVARCHAR(200)"/>
+      <column name="EDIT_PERMISSION" type="NVARCHAR(500)"/>
+      <column name="PAGE_BODY" type="LONGTEXT" />
+      <column name="MOVE_APP_PERMISSION" type="LONGTEXT" />
+      <column name="MOVE_CONTAINER_PERMISSION" type="LONGTEXT" />
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-2">
+    <createTable tableName="PORTAL_CONTAINERS">
+      <column name="ID" type="VARCHAR(36)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_CONTAINERS" />
+      </column>
+      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="ICON" type="NVARCHAR(200)"/>
+      <column name="TEMPLATE" type="NVARCHAR(500)"/>
+      <column name="FACTORY_ID" type="NVARCHAR(200)"/>
+      <column name="TITLE" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="WIDTH" type="VARCHAR(20)"/>
+      <column name="HEIGHT" type="VARCHAR(20)"/>
+      <column name="MOVE_APP_PERMISSION" type="LONGTEXT" />
+      <column name="MOVE_CONTAINER_PERMISSION" type="LONGTEXT" />
+      <column name="PROPERTIES" type="LONGTEXT" />
+      <column name="CONTAINER_BODY" type="LONGTEXT" />
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="social" id="1.0.0-3">
+    <createTable tableName="PORTAL_WINDOWS">
+      <column name="ID" type="VARCHAR(36)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_WINDOWS" />
+      </column>
+      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
+      <column name="TITLE" type="NVARCHAR(200)"/>
+      <column name="ICON" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="SHOW_INFO_BAR" type="BIT" />
+      <column name="SHOW_APP_STATE" type="BIT" />
+      <column name="SHOW_APP_MODE" type="BIT" />
+      <column name="THEME" type="NVARCHAR(200)"/>
+      <column name="WIDTH" type="VARCHAR(20)"/>
+      <column name="HEIGHT" type="VARCHAR(20)"/>
+      <column name="PROPERTIES" type="LONGTEXT" />
+      <column name="APP_TYPE" type="INT"/>
+      <column name="CONTENT_ID" type="NVARCHAR(200)"/>
+      <column name="CUSTOMIZATION" type="CLOB(1048576)"/>      
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
 </databaseChangeLog>

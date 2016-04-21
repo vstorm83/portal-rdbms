@@ -24,21 +24,9 @@
                xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
                xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
-
-  <component>
-    <key>org.exoplatform.services.listener.ListenerService</key>
-    <type>org.exoplatform.services.listener.ListenerService</type>
-  </component>
-
-
   <component>
     <key>org.exoplatform.portal.pom.config.POMDataStorage</key>
     <type>org.exoplatform.portal.pom.config.POMDataStorage</type>
-  </component>
-
-  <component>
-    <key>org.exoplatform.portal.config.DataStorage</key>
-    <type>org.exoplatform.portal.config.DataStorageImpl</type>
   </component>
 
   <component>

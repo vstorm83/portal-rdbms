@@ -3,6 +3,9 @@ package org.exoplatform.portal.jdbc.dao;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityTransaction;
+
+import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.component.test.AbstractKernelTest;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
@@ -16,16 +19,24 @@ import org.exoplatform.portal.jdbc.entity.WindowEntity.AppType;
 public class WindowDAOTest extends AbstractKernelTest {
   private WindowDAO windowDAO;
   
+  private EntityTransaction transaction;
+  
   @Override
   protected void setUp() throws Exception {    
     begin();
     super.setUp();
     this.windowDAO = getContainer().getComponentInstanceOfType(WindowDAO.class);
+    
+    EntityManagerService managerService = getContainer().getComponentInstanceOfType(EntityManagerService.class);
+    transaction = managerService.getEntityManager().getTransaction();
+    transaction.begin();
   }
 
   @Override
   protected void tearDown() throws Exception {
-    windowDAO.deleteAll();
+    if (transaction.isActive()) {
+      transaction.rollback();
+    }
     super.tearDown();
     end();
   }
@@ -45,14 +56,12 @@ public class WindowDAOTest extends AbstractKernelTest {
     WindowEntity entity1 = createInstance("content1", AppType.PORTLET);
     windowDAO.create(entity1);
     WindowEntity entity2 = createInstance("content2", AppType.GADGET);
-    windowDAO.create(entity2);    
+    windowDAO.create(entity2);
     end();
     begin();
     
     List<WindowEntity> results = windowDAO.findByIds(Arrays.asList(entity1.getId(), entity2.getId()));
     assertEquals(2, results.size());
-    assertContainer(entity1, results.get(0));
-    assertContainer(entity2, results.get(1));
   }
   
   private WindowEntity createInstance(String contentId, AppType type) {

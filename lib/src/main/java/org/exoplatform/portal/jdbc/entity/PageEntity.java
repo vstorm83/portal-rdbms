@@ -8,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.json.simple.JSONArray;
@@ -22,6 +23,7 @@ import org.exoplatform.portal.mop.page.PageState;
 
 @Entity
 @ExoEntity
+@Table(name = "PORTAL_PAGES")
 @NamedQueries({
     @NamedQuery(name = "PageEntity.findByKey", query = "SELECT p FROM PageEntity p WHERE p.ownerType = :ownerType AND p.ownerId = :ownerId AND p.name = :name") })
 public class PageEntity extends ComponentEntity implements Serializable {

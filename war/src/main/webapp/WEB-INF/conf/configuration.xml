@@ -26,17 +26,34 @@
   </component>
   
   <component>
-    <key>org.exoplatform.portal.jdbc.service.PageDAO</key>
-    <type>org.exoplatform.portal.jdbc.service.PageDAOImpl</type>
+    <key>org.exoplatform.portal.jdbc.dao.PageDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.PageDAOImpl</type>
   </component> 
-  
   <component>
-    <key>org.exoplatform.portal.mop.page.PageService</key>
+    <key>org.exoplatform.portal.jdbc.dao.ContainerDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.ContainerDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.WindowDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.WindowDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.service.PageService</key>
     <type>org.exoplatform.portal.jdbc.service.PageServiceImpl</type>
-  </component> 
-  
+  </component>
+   
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
-    <type></type>
+    <type>org.exoplatform.portal.jdbc.service.JDBCModelStorageImpl</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.portal.mop.page.PageService</key>
+    <type>org.exoplatform.portal.jdbc.service.PageServiceWrapper</type>
+  </component>
+  
+  <component>
+    <key>org.exoplatform.portal.pom.config.POMDataStorage</key>
+    <type>org.exoplatform.portal.pom.config.POMDataStorage</type>
   </component>
 </configuration>

@@ -3,6 +3,9 @@ package org.exoplatform.portal.jdbc.dao;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityTransaction;
+
+import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.component.test.AbstractKernelTest;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
@@ -15,16 +18,24 @@ import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 public class ContainerDAOTest extends AbstractKernelTest {
   private ContainerDAO containerDAO;
   
+  private EntityTransaction transaction;
+  
   @Override
   protected void setUp() throws Exception {    
     begin();
     super.setUp();
     this.containerDAO = getContainer().getComponentInstanceOfType(ContainerDAO.class);
+    
+    EntityManagerService managerService = getContainer().getComponentInstanceOfType(EntityManagerService.class);
+    transaction = managerService.getEntityManager().getTransaction();
+    transaction.begin();
   }
 
   @Override
   protected void tearDown() throws Exception {
-    containerDAO.deleteAll();
+    if (transaction.isActive()) {
+      transaction.rollback();
+    }
     super.tearDown();
     end();
   }
@@ -50,8 +61,6 @@ public class ContainerDAOTest extends AbstractKernelTest {
     
     List<ContainerEntity> results = containerDAO.findByIds(Arrays.asList(entity1.getId(), entity2.getId()));
     assertEquals(2, results.size());
-    assertContainer(entity1, results.get(0));
-    assertContainer(entity2, results.get(1));
   }
   
   private ContainerEntity createInstance(String name, String description) {
