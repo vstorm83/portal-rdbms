@@ -41,11 +41,14 @@
     <key>org.exoplatform.portal.jdbc.service.PageService</key>
     <type>org.exoplatform.portal.jdbc.service.PageServiceImpl</type>
   </component>
-  
-  <!-- 
+   
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
     <type>org.exoplatform.portal.jdbc.service.JDBCModelStorageImpl</type>
   </component>
-   -->
+
+  <component>
+    <key>org.exoplatform.portal.mop.page.PageService</key>
+    <type>org.exoplatform.portal.jdbc.service.PageServiceWrapper</type>
+  </component>
 </configuration>

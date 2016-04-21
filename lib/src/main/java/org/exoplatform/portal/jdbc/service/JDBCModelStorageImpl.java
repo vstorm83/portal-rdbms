@@ -56,6 +56,7 @@ import org.exoplatform.portal.jdbc.entity.PageEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity.AppType;
 import org.exoplatform.portal.mop.SiteKey;
+import org.exoplatform.portal.mop.SiteType;
 import org.exoplatform.portal.pom.config.POMDataStorage;
 import org.exoplatform.portal.pom.config.Utils;
 import org.exoplatform.portal.pom.data.ApplicationData;
@@ -86,11 +87,11 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   private static Log   log = ExoLogger.getExoLogger(JDBCModelStorageImpl.class);
 
-  public JDBCModelStorageImpl(PageDAO pageDAO, WindowDAO windowDAO, ContainerDAO containerDAO, POMDataStorage delegate) {
+  public JDBCModelStorageImpl(PageDAO pageDAO, WindowDAO windowDAO, ContainerDAO containerDAO) {
     this.pageDAO = pageDAO;
     this.windowDAO = windowDAO;
     this.containerDAO = containerDAO;
-    this.delegate = delegate;
+//    this.delegate = delegate;
   }
 
   @Override
@@ -319,7 +320,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                                      null,
                                      Collections.<String> emptyList(),
                                      buildChildren(pageBody),
-                                     entity.getOwnerType().name(),
+                                     entity.getOwnerType().getName(),
                                      entity.getOwnerId(),
                                      null,
                                      false,

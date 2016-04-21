@@ -345,21 +345,23 @@ public class PageServiceImpl implements PageService {
       entity = new PageEntity();
     }
     PageState state = page.getState();
-    entity.setAccessPermissions(PageEntity.convert(state.getAccessPermissions()));
-    entity.setDescription(state.getDescription());
-    entity.setDisplayName(state.getDisplayName());
-    entity.setEditPermission(state.getEditPermission());
-    entity.setFactoryId(state.getFactoryId());
-    entity.setShowMaxWindow(state.getShowMaxWindow());
+    if (state != null) {
+      entity.setAccessPermissions(PageEntity.convert(state.getAccessPermissions()));
+      entity.setDescription(state.getDescription());
+      entity.setDisplayName(state.getDisplayName());
+      entity.setEditPermission(state.getEditPermission());
+      entity.setFactoryId(state.getFactoryId());
+      entity.setShowMaxWindow(state.getShowMaxWindow());
+      
+      entity.setMoveAppsPermissions(PageEntity.convert(state.getMoveAppsPermissions()));
+      entity.setMoveContainersPermissions(PageEntity.convert(state.getMoveContainersPermissions()));
+    }
 
     SiteKey siteKey = page.getKey().getSite();
     entity.setOwnerId(siteKey.getName());
     entity.setOwnerType(siteKey.getType());
     entity.setName(page.getKey().getName());
-    
-    entity.setMoveAppsPermissions(PageEntity.convert(state.getMoveAppsPermissions()));
-    entity.setMoveContainersPermissions(PageEntity.convert(state.getMoveContainersPermissions()));
-    
+
     return entity;
   }
 }
