@@ -5,10 +5,9 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.portal.jdbc.entity.WindowEntity;
 
-public class WindowDAOImpl extends GenericDAOJPAImpl<WindowEntity, String>implements WindowDAO {
+public class WindowDAOImpl extends AbstractDAO<WindowEntity> implements WindowDAO {
 
   @Override
   public List<WindowEntity> findByIds(List<String> ids) {

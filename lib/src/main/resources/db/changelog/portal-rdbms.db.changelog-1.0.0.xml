@@ -11,7 +11,7 @@
 
   <changeSet author="portal" id="1.0.0-1">
     <createTable tableName="PORTAL_PAGES">
-      <column name="ID" type="VARCHAR(36)">
+      <column name="ID" type="VARCHAR(200)">
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_PAGES" />
       </column>
@@ -35,7 +35,7 @@
   
   <changeSet author="portal" id="1.0.0-2">
     <createTable tableName="PORTAL_CONTAINERS">
-      <column name="ID" type="VARCHAR(36)">
+      <column name="ID" type="VARCHAR(200)">
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_CONTAINERS" />
       </column>
@@ -60,7 +60,7 @@
   
   <changeSet author="social" id="1.0.0-3">
     <createTable tableName="PORTAL_WINDOWS">
-      <column name="ID" type="VARCHAR(36)">
+      <column name="ID" type="VARCHAR(200)">
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_WINDOWS" />
       </column>
@@ -77,7 +77,7 @@
       <column name="PROPERTIES" type="LONGTEXT" />
       <column name="APP_TYPE" type="INT"/>
       <column name="CONTENT_ID" type="NVARCHAR(200)"/>
-      <column name="CUSTOMIZATION" type="CLOB(1048576)"/>      
+      <column name="CUSTOMIZATION" type="BLOB"/>      
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />

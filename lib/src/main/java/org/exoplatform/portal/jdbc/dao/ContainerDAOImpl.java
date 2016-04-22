@@ -5,10 +5,9 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 
-public class ContainerDAOImpl extends GenericDAOJPAImpl<ContainerEntity, String>implements ContainerDAO {
+public class ContainerDAOImpl extends AbstractDAO<ContainerEntity> implements ContainerDAO {
 
   @Override
   public List<ContainerEntity> findByIds(List<String> ids) {

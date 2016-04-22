@@ -16,14 +16,13 @@ import org.gatein.api.page.PageQuery;
 import org.gatein.api.site.SiteType;
 
 import org.exoplatform.commons.persistence.impl.EntityManagerHolder;
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
 import org.exoplatform.portal.jdbc.entity.PageEntity_;
 import org.exoplatform.portal.mop.SiteKey;
 import org.exoplatform.portal.mop.page.PageKey;
 
-public class PageDAOImpl extends GenericDAOJPAImpl<PageEntity, String>implements PageDAO {
+public class PageDAOImpl extends AbstractDAO<PageEntity> implements PageDAO {
 
     @Override
     public PageEntity findByKey(PageKey pageKey) {

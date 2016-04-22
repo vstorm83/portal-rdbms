@@ -5,6 +5,7 @@ import java.util.List;
 import org.gatein.common.logging.Logger;
 import org.gatein.common.logging.LoggerFactory;
 
+import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.portal.jdbc.dao.ContainerDAO;
 import org.exoplatform.portal.jdbc.dao.PageDAO;
 import org.exoplatform.portal.jdbc.dao.WindowDAO;
@@ -29,8 +30,8 @@ public class PageServiceWrapper implements PageService {
     /** . */
     private final ListenerService listenerService;
 
-    public PageServiceWrapper(ListenerService listenerService, PageDAO pageDAO, ContainerDAO containerDAO, WindowDAO windowDAO) {
-        this.service = new PageServiceImpl(pageDAO, containerDAO, windowDAO);
+    public PageServiceWrapper(ListenerService listenerService, PageDAO pageDAO, ContainerDAO containerDAO, WindowDAO windowDAO, DataInitializer initializer) {
+        this.service = new PageServiceImpl(pageDAO, containerDAO, windowDAO); 
         this.listenerService = listenerService;
     }
 

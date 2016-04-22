@@ -24,6 +24,20 @@
   <component>
     <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
   </component>
+  <component>
+    <key>org.exoplatform.commons.api.persistence.DataInitializer</key>
+    <type>org.exoplatform.commons.persistence.impl.LiquibaseDataInitializer</type>
+    <init-params>
+      <value-param>
+        <name>liquibase.datasource</name>
+        <value>${exo.jpa.datasource.name:java:/comp/env/exo-jpa_portal}</value>
+      </value-param>
+      <value-param>
+        <name>liquibase.contexts</name>
+        <value>production</value>
+      </value-param>
+    </init-params>
+  </component>
   
   <component>
     <key>org.exoplatform.portal.jdbc.dao.PageDAO</key>
@@ -36,10 +50,6 @@
   <component>
     <key>org.exoplatform.portal.jdbc.dao.WindowDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.WindowDAOImpl</type>
-  </component>
-  <component>
-    <key>org.exoplatform.portal.jdbc.service.PageService</key>
-    <type>org.exoplatform.portal.jdbc.service.PageServiceImpl</type>
   </component>
    
   <component>

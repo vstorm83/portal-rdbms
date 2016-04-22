@@ -25,7 +25,7 @@ public abstract class ComponentEntity implements Serializable {
   private static final long  serialVersionUID     = 1181255637761644181L;
 
   @Id
-  @Column(name = "ID")
+  @Column(name = "ID", length = 200)
   private String             id;
 
   public static final String PERMISSION_SEPARATOR = ";";
