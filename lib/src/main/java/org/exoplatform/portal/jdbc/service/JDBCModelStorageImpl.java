@@ -29,12 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.gatein.common.io.IOTools;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import org.exoplatform.commons.utils.LazyPageList;
 import org.exoplatform.portal.config.NoSuchDataException;
 import org.exoplatform.portal.config.Query;
@@ -72,6 +66,11 @@ import org.exoplatform.portal.pom.data.PortalKey;
 import org.exoplatform.portal.pom.spi.portlet.Portlet;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.gatein.common.io.IOTools;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class JDBCModelStorageImpl implements ModelDataStorage {
 
@@ -564,10 +563,10 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                                                                                               null);
 
             //
-            boolean showInfoBar = Boolean.parseBoolean(attrs.getOrDefault(MappedAttributes.SHOW_INFO_BAR.getName(), false).toString());
-            boolean showMode = Boolean.parseBoolean(attrs.getOrDefault(MappedAttributes.SHOW_MODE.getName(), false).toString());
-            boolean showWindowState = Boolean.parseBoolean(attrs.getOrDefault(MappedAttributes.SHOW_WINDOW_STATE.getName(), false).toString());
-            String theme = (String)attrs.getOrDefault(MappedAttributes.THEME.getName(), null);
+            boolean showInfoBar = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_INFO_BAR.getName())));
+            boolean showMode = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_MODE.getName())));
+            boolean showWindowState = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_WINDOW_STATE.getName())));
+            String theme = (String)attrs.get(MappedAttributes.THEME.getName());
 
             //
             List<String> accessPermissions = Collections.singletonList(UserACL.EVERYONE);
