@@ -51,9 +51,11 @@ public class NavigationStoreImpl implements NavigationStore {
 
   private static Log    log = ExoLogger.getExoLogger(NavigationStoreImpl.class);
 
-  public NavigationStoreImpl(NavigationDAO navigationDAO, NodeDAO nodeDAO) {
+  public NavigationStoreImpl(NavigationDAO navigationDAO, NodeDAO nodeDAO, PageDAO pageDAO, DataStorage dataStorage) {
     this.navigationDAO = navigationDAO;
     this.nodeDAO = nodeDAO;
+    this.pageDAO = pageDAO;
+    this.dataStorage = dataStorage;
   }
 
   @Override
@@ -79,14 +81,16 @@ public class NavigationStoreImpl implements NavigationStore {
 
     if (parent != null) {
       List<NodeEntity> children = parent.getChildren();
-      int i = 0;
+      int i;
       for (i = 0; i < children.size(); i++) {
-        if (children.get(0).getId() == prev) {
+        if (children.get(i).getId() == prev) {
+          i += 1;
           break;
         }
       }
-      children.add(i + 1, target);
+      children.add(i, target);
       parent.setChildren(children);
+      nodeDAO.create(target);
       nodeDAO.update(parent);
     } else {
       nodeDAO.create(target);
@@ -243,6 +247,7 @@ public class NavigationStoreImpl implements NavigationStore {
     if (entity == null) {
       entity = new NavigationEntity();
       NodeEntity rootNode = new NodeEntity();
+      rootNode.setName("default");
       entity.setRootNode(rootNode);
 
     }
@@ -256,12 +261,17 @@ public class NavigationStoreImpl implements NavigationStore {
     if (entity == null) {
       entity = new NodeEntity();
     }
+    if (state == null) {
+      return entity;
+    }
     entity.setEndTime(state.getEndPublicationTime());
     entity.setIcon(state.getIcon());
     entity.setLabel(state.getLabel());
-    PageEntity page = pageDAO.findByKey(state.getPageRef());
-    if (page != null) {
-      entity.setPageRef(page);
+    if (state.getPageRef() != null) {
+      PageEntity page = pageDAO.findByKey(state.getPageRef());
+      if (page != null) {
+        entity.setPageRef(page);
+      }      
     }
     entity.setStartTime(state.getStartPublicationTime());
     entity.setVisibility(state.getVisibility());

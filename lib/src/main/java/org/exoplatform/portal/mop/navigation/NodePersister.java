@@ -49,7 +49,7 @@ class NodePersister<N> extends NodeChangeListener.Base<NodeContext<N>> {
             throws HierarchyException {
 
         //
-        NodeData[] result = persistence.createNode(parent.data.id, previous != null ? previous.data.id : null, name, null);
+        NodeData[] result = persistence.createNode(parent.data.id, previous != null ? previous.data.id : null, name, target.state);
 
         //
         parent.data = result[0];

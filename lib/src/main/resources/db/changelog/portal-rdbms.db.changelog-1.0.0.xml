@@ -58,7 +58,7 @@
     </modifySql>
   </changeSet>
   
-  <changeSet author="social" id="1.0.0-3">
+  <changeSet author="portal" id="1.0.0-3">
     <createTable tableName="PORTAL_WINDOWS">
       <column name="ID" type="VARCHAR(200)">
         <constraints nullable="false" primaryKey="true"
@@ -83,4 +83,48 @@
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
     </modifySql>
   </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-4">
+    <createTable tableName="PORTAL_NODES">
+      <column name="NODE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_NODES"/>
+      </column>
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="LABEL" type="NVARCHAR(200)"/>
+      <column name="ICON" type="NVARCHAR(200)"/>
+      <column name="START_TIME" type="BIGINT"/>
+      <column name="END_TIME" type="BIGINT"/>
+      <column name="VISIBILITY" type="INT"/>
+      <column name="INDEX" type="INT"/>
+      
+      <column name="PAGE_ID" type="VARCHAR(200)">
+        <constraints foreignKeyName="FK_PORTAL_NODE_PAGE" references="PORTAL_PAGES(ID)"/>
+      </column>
+      
+      <column name="PARENT_ID" type="BIGINT">
+        <constraints foreignKeyName="FK_PORTAL_NODE_PARENT" references="PORTAL_NODES(NODE_ID)"/>
+      </column>
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-5">
+    <createTable tableName="PORTAL_NAVIGATIONS">
+      <column name="NAVIGATION_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_NAVIGATIONS"/>
+      </column>
+      <column name="OWNER_TYPE" type="INT"/>
+      <column name="OWNER_ID" type="NVARCHAR(200)"/>
+      <column name="PRIORITY" type="INT"/>
+      <column name="NODE_ID" type="BIGINT">
+        <constraints foreignKeyName="FK_PORTAL_NAV_NODE" references="PORTAL_NODES(NODE_ID)" nullable="false"/>
+      </column>
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
 </databaseChangeLog>

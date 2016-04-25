@@ -37,6 +37,14 @@
     <key>org.exoplatform.portal.jdbc.dao.WindowDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.WindowDAOImpl</type>
   </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.NodeDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.NodeDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.NavigationDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.NavigationDAOImpl</type>
+  </component>
    
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
@@ -52,4 +60,14 @@
     <key>org.exoplatform.portal.pom.config.POMDataStorage</key>
     <type>org.exoplatform.portal.pom.config.POMDataStorage</type>
   </component>
+  
+  <component>
+    <key>org.exoplatform.portal.mop.navigation.NavigationService</key>
+    <type>org.exoplatform.portal.mop.navigation.JDBCNavigationServiceWrapper</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.mop.navigation.NavigationStore</key>
+    <type>org.exoplatform.portal.mop.navigation.NavigationStoreImpl</type>
+  </component>
+  
 </configuration>
