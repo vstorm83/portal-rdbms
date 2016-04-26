@@ -188,12 +188,15 @@ public class NavigationStoreImpl implements NavigationStore {
   public List<NavigationData> loadNavigations(SiteType type) {
     List<NavigationData> results = new LinkedList<NavigationData>();
 
-    Query<PortalConfig> q = new Query<PortalConfig>(type.name(), null, PortalConfig.class);
+    Query<PortalConfig> q = new Query<PortalConfig>(type.getName(), null, PortalConfig.class);
     try {
       LazyPageList<PortalConfig> configs = dataStorage.find(q);
       for (PortalConfig config : configs.getAll()) {
         SiteKey siteKey = new SiteKey(config.getType(), config.getName());
-        results.add(loadNavigationData(siteKey));
+        NavigationData navData = loadNavigationData(siteKey);
+        if (navData != NavigationData.EMPTY) {
+          results.add(navData);          
+        }
       }
     } catch (Exception e) {
       log.error(e);

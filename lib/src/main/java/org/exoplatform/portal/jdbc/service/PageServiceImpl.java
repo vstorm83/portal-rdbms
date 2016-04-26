@@ -316,7 +316,7 @@ public class PageServiceImpl implements PageService {
     ListAccess<PageEntity> dataSet = pageDAO.findByQuery(builder.build());
     try {
       ArrayList<PageContext> pages = new ArrayList<PageContext>(dataSet.getSize());
-      for (PageEntity data : dataSet.load(from, to - from)) {
+      for (PageEntity data : dataSet.load(0, dataSet.getSize())) {
         pages.add(data.buildPageContext());
       }
       return new QueryResult<PageContext>(from, dataSet.getSize(), pages);      
