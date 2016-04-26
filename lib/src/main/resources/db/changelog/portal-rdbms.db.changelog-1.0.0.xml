@@ -86,7 +86,7 @@
   
   <changeSet author="portal" id="1.0.0-4">
     <createTable tableName="PORTAL_NODES">
-      <column name="NODES_ID" type="VARCHAR(200)">
+      <column name="NODE_ID" type="VARCHAR(200)">
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_NODES" />
       </column>
@@ -102,7 +102,7 @@
         <constraints foreignKeyName="FK_PORTAL_NODE_PAGE" references="PORTAL_PAGES(ID)"/>
       </column>
       
-      <column name="PARENT_ID" type="BIGINT">
+      <column name="PARENT_ID" type="VARCHAR(200)">
         <constraints foreignKeyName="FK_PORTAL_NODE_PARENT" references="PORTAL_NODES(NODE_ID)"/>
       </column>
     </createTable>
@@ -120,7 +120,7 @@
       <column name="OWNER_TYPE" type="INT"/>
       <column name="OWNER_ID" type="NVARCHAR(200)"/>
       <column name="PRIORITY" type="INT"/>
-      <column name="NODE_ID" type="BIGINT">
+      <column name="NODE_ID" type="VARCHAR(200)">
         <constraints foreignKeyName="FK_PORTAL_NAV_NODE" references="PORTAL_NODES(NODE_ID)" nullable="false"/>
       </column>
     </createTable>
