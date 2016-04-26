@@ -166,7 +166,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
     if (window != null) {
       return window.getContentId();
     } else {
-      return null;
+      return delegate.getId(state);
     }
 
   }
@@ -194,7 +194,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
         return null;
       }
     } else {
-      return null;
+        return delegate.load(state, type);
     }
   }
 
@@ -218,6 +218,8 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
         window.setCustomization(null);
       }
       windowDAO.update(window);
+    } else {
+      delegate.save(state, preferences);
     }
     return state;
   }
