@@ -18,21 +18,18 @@
  */
 package org.exoplatform.portal.jdbc.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import java.io.Serializable;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.exoplatform.portal.mop.SiteType;
@@ -47,10 +44,8 @@ public class NavigationEntity implements Serializable {
   private static final long serialVersionUID = 3811683620903785319L;
 
   @Id
-  @SequenceGenerator(name = "SEQ_PORTAL_NAVIGATIONS_ID", sequenceName = "SEQ_PORTAL_NAVIGATIONS_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_PORTAL_NAVIGATIONS_ID")
-  @Column(name = "NAVIGATION_ID")
-  private Long              id;
+  @Column(name = "NAVIGATION_ID", length = 200)
+  private String             id;
 
   @Column(name = "OWNER_TYPE")
   private SiteType          ownerType;
@@ -65,11 +60,11 @@ public class NavigationEntity implements Serializable {
   @JoinColumn(name = "NODE_ID")
   private NodeEntity        rootNode;
 
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 

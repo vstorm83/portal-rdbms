@@ -21,6 +21,12 @@ package org.exoplatform.portal.jdbc.dao;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.portal.jdbc.entity.NodeEntity;
 
-public class NodeDAOImpl extends GenericDAOJPAImpl<NodeEntity, Long> implements NodeDAO {
+public class NodeDAOImpl extends GenericDAOJPAImpl<NodeEntity, String> implements NodeDAO {
+
+    @Override
+    public NodeEntity create(NodeEntity entity) {
+        // TODO Auto-generated method stub
+        return super.create(entity);
+    }
 
 }

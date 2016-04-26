@@ -1,10 +1,5 @@
 package org.exoplatform.portal.jdbc.entity;
 
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -12,11 +7,14 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.PrePersist;
 
-import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONAware;
-import org.json.simple.JSONObject;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.json.simple.JSONObject;
 
 @Entity
 @ExoEntity

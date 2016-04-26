@@ -21,6 +21,6 @@ package org.exoplatform.portal.jdbc.dao;
 import org.exoplatform.commons.api.persistence.GenericDAO;
 import org.exoplatform.portal.jdbc.entity.NodeEntity;
 
-public interface NodeDAO extends GenericDAO<NodeEntity, Long> {
+public interface NodeDAO extends GenericDAO<NodeEntity, String> {
 
 }

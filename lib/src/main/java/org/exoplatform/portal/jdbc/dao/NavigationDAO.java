@@ -22,7 +22,7 @@ import org.exoplatform.commons.api.persistence.GenericDAO;
 import org.exoplatform.portal.jdbc.entity.NavigationEntity;
 import org.exoplatform.portal.mop.SiteType;
 
-public interface NavigationDAO extends GenericDAO<NavigationEntity, Long> {
+public interface NavigationDAO extends GenericDAO<NavigationEntity, String> {
 
   NavigationEntity findByOwner(SiteType type, String name);
 

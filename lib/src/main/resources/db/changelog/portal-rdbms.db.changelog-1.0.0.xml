@@ -86,8 +86,9 @@
   
   <changeSet author="portal" id="1.0.0-4">
     <createTable tableName="PORTAL_NODES">
-      <column name="NODE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_NODES"/>
+      <column name="NODES_ID" type="VARCHAR(200)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_NODES" />
       </column>
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="LABEL" type="NVARCHAR(200)"/>
@@ -112,8 +113,9 @@
   
   <changeSet author="portal" id="1.0.0-5">
     <createTable tableName="PORTAL_NAVIGATIONS">
-      <column name="NAVIGATION_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_NAVIGATIONS"/>
+      <column name="NAVIGATION_ID" type="VARCHAR(200)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_NAVIGATIONS" />
       </column>
       <column name="OWNER_TYPE" type="INT"/>
       <column name="OWNER_ID" type="NVARCHAR(200)"/>

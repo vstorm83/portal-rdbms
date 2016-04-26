@@ -25,19 +25,26 @@ import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.portal.jdbc.entity.NavigationEntity;
 import org.exoplatform.portal.mop.SiteType;
 
-public class NavigationDAOImpl extends GenericDAOJPAImpl<NavigationEntity, Long> implements NavigationDAO {
+public class NavigationDAOImpl extends GenericDAOJPAImpl<NavigationEntity, String>implements NavigationDAO {
 
-  @Override
-  public NavigationEntity findByOwner(SiteType type, String name) {
-    TypedQuery<NavigationEntity> query = getEntityManager().createNamedQuery("NavigationEntity.findByOwner", NavigationEntity.class);
+    @Override
+    public NavigationEntity findByOwner(SiteType type, String name) {
+        TypedQuery<NavigationEntity> query = getEntityManager().createNamedQuery("NavigationEntity.findByOwner",
+                NavigationEntity.class);
 
-    query.setParameter("ownerType", type);
-    query.setParameter("ownerId", name);
-    try {
-        return query.getSingleResult();
-    } catch (NoResultException ex) {
-        return null;
+        query.setParameter("ownerType", type);
+        query.setParameter("ownerId", name);
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
     }
-  }
+
+    @Override
+    public NavigationEntity create(NavigationEntity entity) {
+        // TODO Auto-generated method stub
+        return super.create(entity);
+    }
 
 }

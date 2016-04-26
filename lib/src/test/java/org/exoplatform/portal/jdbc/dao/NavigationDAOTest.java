@@ -2,6 +2,7 @@ package org.exoplatform.portal.jdbc.dao;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityTransaction;
 
@@ -46,10 +47,7 @@ public class NavigationDAOTest extends AbstractKernelTest {
   }
   
   public void testCreateNav() {
-    NavigationEntity nav = new NavigationEntity();
-    nav.setOwnerId("ownerName");
-    nav.setOwnerType(SiteType.PORTAL);
-    nav.setPriority(1);
+    NavigationEntity nav = createNav("classic");
     navigationDAO.create(nav);
     
     NavigationEntity expected = navigationDAO.find(nav.getId());
@@ -81,8 +79,37 @@ public class NavigationDAOTest extends AbstractKernelTest {
     assertNode(children.get(0), node3);
     assertNode(children.get(1), node2);
   }
+  
+  public void testUpdateNav() {
+      NodeEntity node1 = createNode("node1");
+      nodeDAO.create(node1);
+      
+      NavigationEntity nav = createNav("classic");
+      nav.setRootNode(node1);
+      navigationDAO.create(nav);
+      
+      end();
+      begin();
+      
+      NavigationEntity expected = navigationDAO.find(nav.getId());
+      assertNotNull(expected);
+      expected.setOwnerId("testClassic");
+      navigationDAO.update(expected);
+  }
 
-  private void assertNode(NodeEntity expected, NodeEntity node) {
+  /**
+ * @return
+ */
+private NavigationEntity createNav(String ownerId) {
+    NavigationEntity nav = new NavigationEntity();
+    nav.setOwnerId(ownerId);
+    nav.setOwnerType(SiteType.PORTAL);
+    nav.setPriority(1);
+    nav.setId(UUID.randomUUID().toString());
+    return nav;
+}
+
+private void assertNode(NodeEntity expected, NodeEntity node) {
     assertEquals(expected.getEndTime(), node.getEndTime());
     assertEquals(expected.getIcon(), node.getIcon());
     assertEquals(expected.getIndex(), node.getIndex());
@@ -95,6 +122,7 @@ public class NavigationDAOTest extends AbstractKernelTest {
 
   private NodeEntity createNode(String name) {
     NodeEntity node = new NodeEntity();
+    node.setId(UUID.randomUUID().toString());
     node.setName(name);
     node.setEndTime(1);
     node.setIcon("icon");

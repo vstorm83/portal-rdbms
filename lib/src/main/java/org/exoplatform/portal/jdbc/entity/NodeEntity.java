@@ -18,24 +18,21 @@
  */
 package org.exoplatform.portal.jdbc.entity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.exoplatform.portal.mop.Visibility;
@@ -48,10 +45,8 @@ public class NodeEntity implements Serializable {
   private static final long serialVersionUID = 8630708630711337929L;
 
   @Id
-  @SequenceGenerator(name = "SEQ_PORTAL_NODES_ID", sequenceName = "SEQ_PORTAL_NODES_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_PORTAL_NODES_ID")
-  @Column(name = "NODE_ID")
-  private Long              id;
+  @Column(name = "NODE_ID", length = 200)
+  private String             id;
 
   @Column(name = "NAME", length = 200)
   private String            name;
@@ -86,11 +81,11 @@ public class NodeEntity implements Serializable {
   @JoinColumn(name = "PARENT_ID")
   private NodeEntity        parent;
 
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
