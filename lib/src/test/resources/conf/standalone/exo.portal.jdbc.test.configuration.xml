@@ -59,6 +59,10 @@
     <key>org.exoplatform.portal.jdbc.dao.NodeDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.NodeDAOImpl</type>
   </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.PermissionDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.PermissionDAOImpl</type>
+  </component>
    
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>

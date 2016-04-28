@@ -82,11 +82,7 @@ public class PageDAOTest extends AbstractKernelTest {
     entity.setDisplayName(displayName);
     entity.setDescription(description);
     entity.setShowMaxWindow(true);
-    entity.setEditPermission("testEditPermission");
-    entity.setAccessPermissions("testAccessPermission");
     entity.setFactoryId("testFactoryId");
-    entity.setMoveAppsPermissions("testMoveApps");
-    entity.setMoveContainersPermissions("testMoveContainer");
     entity.setPageBody("testPageBody");
     return entity;
   }
@@ -95,16 +91,11 @@ public class PageDAOTest extends AbstractKernelTest {
     assertEquals(entity.getId(), result.getId());
     assertEquals(entity.getDescription(), result.getDescription());
     assertEquals(entity.getDisplayName(), result.getDisplayName());
-    assertEquals(entity.getEditPermission(), result.getEditPermission());
-    assertEquals(entity.getAccessPermissions(), result.getAccessPermissions());
     assertEquals(entity.getFactoryId(), result.getFactoryId());
     assertEquals(entity.getOwnerId(), result.getOwnerId());
     assertEquals(entity.getOwnerType(), result.getOwnerType());
     assertEquals(entity.getName(), result.getName());
-    assertEquals(entity.getAccessPermissions(), result.getAccessPermissions());
     assertEquals(entity.getFactoryId(), result.getFactoryId());
-    assertEquals(entity.getMoveAppsPermissions(), result.getMoveAppsPermissions());
-    assertEquals(entity.getMoveContainersPermissions(), result.getMoveContainersPermissions());
     assertEquals(entity.getPageBody(), result.getPageBody());
   }
 }

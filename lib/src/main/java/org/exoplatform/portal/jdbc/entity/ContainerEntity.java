@@ -67,12 +67,6 @@ public class ContainerEntity extends ComponentEntity implements Serializable {
   @Column(name = "HEIGHT", length = 20)
   private String                height;
 
-  @Column(name = "MOVE_APP_PERMISSION", length = 2000)
-  private String                moveAppsPermissions;
-
-  @Column(name = "MOVE_CONTAINER_PERMISSION", length = 2000)
-  private String                moveContainersPermissions;
-
   @Column(name = "PROPERTIES", length = 2000)
   private String                properties = new JSONObject().toJSONString();
 
@@ -81,22 +75,6 @@ public class ContainerEntity extends ComponentEntity implements Serializable {
   
   @Column(name = "CONTAINER_BODY", length = 5000)
   private String            containerBody = new JSONArray().toJSONString();
-
-  public String getMoveAppsPermissions() {
-    return moveAppsPermissions;
-  }
-
-  public void setMoveAppsPermissions(String moveAppsPermissions) {
-    this.moveAppsPermissions = moveAppsPermissions;
-  }
-
-  public String getMoveContainersPermissions() {
-    return moveContainersPermissions;
-  }
-
-  public void setMoveContainersPermissions(String moveContainersPermissions) {
-    this.moveContainersPermissions = moveContainersPermissions;
-  }
 
   public String getName() {
     return name;

@@ -1,6 +1,7 @@
 package org.exoplatform.portal.jdbc.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,15 +12,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.jdbc.dao.ContainerDAO;
 import org.exoplatform.portal.jdbc.dao.PageDAO;
+import org.exoplatform.portal.jdbc.dao.PermissionDAO;
 import org.exoplatform.portal.jdbc.dao.WindowDAO;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity.TYPE;
 import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
+import org.exoplatform.portal.jdbc.entity.PermissionEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity;
 import org.exoplatform.portal.mop.QueryResult;
 import org.exoplatform.portal.mop.SiteKey;
@@ -35,15 +37,17 @@ import org.exoplatform.services.log.Log;
 
 public class PageServiceImpl implements PageService {
 
-  private static Log LOG = ExoLogger.getExoLogger(PageServiceImpl.class);
-  
-  private PageDAO pageDAO;
-  
-  private ContainerDAO containerDAO;
-  
-  private WindowDAO windowDAO;
-  
-  private static Log log = ExoLogger.getExoLogger(PageServiceImpl.class);
+  private static Log    LOG = ExoLogger.getExoLogger(PageServiceImpl.class);
+
+  private PageDAO       pageDAO;
+
+  private ContainerDAO  containerDAO;
+
+  private WindowDAO     windowDAO;
+
+  private PermissionDAO permissionDAO;
+
+  private static Log    log = ExoLogger.getExoLogger(PageServiceImpl.class);
 
   /**
    * Create an instance that uses the provided persistence.
@@ -51,13 +55,15 @@ public class PageServiceImpl implements PageService {
    * @param pageDAO the persistence
    * @throws NullPointerException if the persistence argument is null
    */
-  public PageServiceImpl(PageDAO pageDAO, ContainerDAO containerDAO, WindowDAO windowDAO) throws NullPointerException {
+  public PageServiceImpl(PageDAO pageDAO, ContainerDAO containerDAO, WindowDAO windowDAO, PermissionDAO permissionDAO)
+      throws NullPointerException {
     if (pageDAO == null) {
       throw new NullPointerException("No null persistence allowed");
     }
     this.pageDAO = pageDAO;
     this.windowDAO = windowDAO;
     this.containerDAO = containerDAO;
+    this.permissionDAO = permissionDAO;
   }
 
   @Override
@@ -69,7 +75,7 @@ public class PageServiceImpl implements PageService {
     //
     PageEntity entity = pageDAO.findByKey(key);
     if (entity != null) {
-      return entity.buildPageContext();
+      return buildPageContext(entity);
     } else {
       return null;
     }
@@ -110,16 +116,19 @@ public class PageServiceImpl implements PageService {
     }
 
     PageEntity entity = pageDAO.findByKey(page.getKey());
-    // 
+    //
+    boolean created = false;
     if (entity == null) {
       entity = buildPageEntityContext(null, page);
       pageDAO.create(entity);
-      return true;
+      created = true;
     } else {
       entity = buildPageEntityContext(entity, page);
       pageDAO.update(entity);
-      return false;
     }
+
+    savePagePermissions(entity.getId(), page);
+    return created;
   }
 
   @Override
@@ -129,11 +138,12 @@ public class PageServiceImpl implements PageService {
     }
 
     //
-    PageEntity page = pageDAO.findByKey(key); 
+    PageEntity page = pageDAO.findByKey(key);
     if (page != null) {
       String pageBody = page.getPageBody();
       JSONArray children = parse(pageBody);
       deleteChildren(children);
+      permissionDAO.deletePermissions(page.getId());
       pageDAO.delete(page);
       return true;
     } else {
@@ -142,27 +152,29 @@ public class PageServiceImpl implements PageService {
   }
 
   private void deleteChildren(JSONArray children) {
-    for (Object child : children) {      
-      JSONObject c = (JSONObject)child;
+    for (Object child : children) {
+      JSONObject c = (JSONObject) child;
       String id = c.get("id").toString();
       TYPE t = TYPE.valueOf(c.get("type").toString());
-      
-      if (TYPE.CONTAINER.equals(t)) {        
-        JSONArray descendants = (JSONArray)c.get("children");
+
+      if (TYPE.CONTAINER.equals(t)) {
+        JSONArray descendants = (JSONArray) c.get("children");
         if (descendants != null) {
           deleteChildren(descendants);
         }
-        
+
         ContainerEntity container = containerDAO.find(id);
         if (container != null) {
           JSONArray dashboardChilds = parse(container.getContainerBody());
           deleteChildren(dashboardChilds);
-          
+
+          permissionDAO.deletePermissions(container.getId());
           containerDAO.delete(container);
         }
       } else if (TYPE.WINDOW.equals(t)) {
         WindowEntity window = windowDAO.find(id);
         if (window != null) {
+          permissionDAO.deletePermissions(window.getId());
           windowDAO.delete(window);
         }
       } else {
@@ -171,7 +183,7 @@ public class PageServiceImpl implements PageService {
     }
   }
 
-  @Override  
+  @Override
   public PageContext clone(PageKey src, PageKey dst) {
     if (src == null) {
       throw new NullPointerException("No null source accepted");
@@ -180,83 +192,126 @@ public class PageServiceImpl implements PageService {
       throw new NullPointerException("No null destination accepted");
     }
 
-    //TODO check no source site
+    // TODO check no source site
     PageEntity pageSrc = pageDAO.findByKey(src);
     if (pageSrc == null) {
-      throw new PageServiceException(PageError.CLONE_NO_SRC_PAGE, "Could not clone non existing page " + src.getName()
-        + " from site of type " + src.getSite().getType() + " with id " + src.getSite().getName());
+      throw new PageServiceException(PageError.CLONE_NO_SRC_PAGE,
+                                     "Could not clone non existing page " + src.getName() + " from site of type "
+                                         + src.getSite().getType() + " with id " + src.getSite().getName());
     } else {
-      //TODO CHECK no destination site
+      // TODO CHECK no destination site
       PageEntity pageDst = pageDAO.findByKey(dst);
       if (pageDst != null) {
-        throw new PageServiceException(PageError.CLONE_DST_ALREADY_EXIST, "Could not clone page " + dst.getName()
-                                       + "to existing page " + dst.getSite().getType() + " with id " + dst.getSite().getName());
+        throw new PageServiceException(PageError.CLONE_DST_ALREADY_EXIST,
+                                       "Could not clone page " + dst.getName() + "to existing page " + dst.getSite().getType()
+                                           + " with id " + dst.getSite().getName());
       } else {
-        pageDst = buildPageEntityContext(null, pageSrc.buildPageContext());        
+        pageDst = buildPageEntityContext(null, buildPageContext(pageSrc));
         List<ComponentEntity> children = clone(pageSrc.getPageBody());
         pageDst.setChildren(children);
-        pageDst.setPageBody(((JSONArray)pageDst.toJSON().get("children")).toJSONString());
+        pageDst.setPageBody(((JSONArray) pageDst.toJSON().get("children")).toJSONString());
         //
         SiteKey siteKey = dst.getSite();
         pageDst.setOwnerId(siteKey.getName());
         pageDst.setOwnerType(siteKey.getType());
         pageDst.setName(dst.getName());
-        
+
         pageDAO.create(pageDst);
-        return pageDst.buildPageContext();
-      }      
-    }    
+        clonePermissions(pageDst.getId(), pageSrc.getId());
+
+        PageContext result = buildPageContext(pageDst);
+        return result;
+      }
+    }
   }
 
+  @Override
+  public QueryResult<PageContext> findPages(int from,
+                                            int to,
+                                            SiteType siteType,
+                                            String siteName,
+                                            String pageName,
+                                            String pageTitle) {
+    PageQuery.Builder builder = new PageQuery.Builder();
+    builder.withDisplayName(pageTitle).withSiteType(convert(siteType)).withSiteName(siteName);
+    builder.withPagination(from, to - from);
+    ListAccess<PageEntity> dataSet = pageDAO.findByQuery(builder.build());
+    try {
+      ArrayList<PageContext> pages = new ArrayList<PageContext>(dataSet.getSize());
+      for (PageEntity data : dataSet.load(0, dataSet.getSize())) {
+        pages.add(buildPageContext(data));
+      }
+      return new QueryResult<PageContext>(from, dataSet.getSize(), pages);
+    } catch (Exception ex) {
+      LOG.error(ex);
+      return new QueryResult<PageContext>(from, 0, Collections.<PageContext> emptyList());
+    }
+  }
+  
   private List<ComponentEntity> clone(String pageBody) {
     List<ComponentEntity> results = new LinkedList<ComponentEntity>();
-    
+
     JSONArray children = parse(pageBody);
-    
+
     for (Object child : children) {
-      JSONObject c = (JSONObject)child;
+      JSONObject c = (JSONObject) child;
       String id = c.get("id").toString();
       TYPE type = TYPE.valueOf(c.get("type").toString());
-      
+
       switch (type) {
       case CONTAINER:
         ContainerEntity srcC = containerDAO.find(id);
-        ContainerEntity dstC = clone(srcC);        
-        
+        ContainerEntity dstC = clone(srcC);
+
         JSONArray descendants = parse(srcC.getContainerBody());
         if (descendants.size() > 0) {
-          //dashboard
+          // dashboard
           dstC.setChildren(clone(srcC.getContainerBody()));
         } else {
-          //normal container
-          dstC.setChildren(clone(((JSONArray)c.get("children")).toJSONString()));
+          // normal container
+          dstC.setChildren(clone(((JSONArray) c.get("children")).toJSONString()));
         }
-        dstC.setContainerBody(((JSONArray)dstC.toJSON().get("children")).toJSONString());
-        
+        dstC.setContainerBody(((JSONArray) dstC.toJSON().get("children")).toJSONString());
+
         containerDAO.create(dstC);
+        clonePermissions(dstC.getId(), srcC.getId());
         results.add(dstC);
         break;
       case WINDOW:
         WindowEntity srcW = windowDAO.find(id);
         WindowEntity dstW = clone(srcW);
-        
+
         windowDAO.create(dstW);
+        clonePermissions(dstW.getId(), srcW.getId());
         results.add(dstW);
         break;
       default:
         throw new IllegalStateException("Can't handle type: " + type);
       }
-      
+
     }
     return results;
   }
 
+  private void clonePermissions(String dstId, String srcId) {
+    clonePermissions(dstId, srcId, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS);
+    clonePermissions(dstId, srcId, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.EDIT);
+    clonePermissions(dstId, srcId, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
+    clonePermissions(dstId, srcId, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
+  }
+
+  private void clonePermissions(String dstId, String srcId, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE type) {
+    List<PermissionEntity> permissions = permissionDAO.getPermissions(srcId, type);
+    if (!permissions.isEmpty()) {
+      permissionDAO.savePermissions(dstId, type, buildPermission(permissions));
+    }
+  }
+
   private WindowEntity clone(WindowEntity src) {
-    WindowEntity dst = new WindowEntity();    
+    WindowEntity dst = new WindowEntity();
     dst.setAppType(src.getAppType());
     dst.setContentId(src.getContentId());
-    dst.setCustomization(src.getCustomization());    
-    dst.setAccessPermissions(src.getAccessPermissions());
+    dst.setCustomization(src.getCustomization());
     dst.setDescription(src.getDescription());
     dst.setHeight(src.getHeight());
     dst.setIcon(src.getIcon());
@@ -275,7 +330,7 @@ public class PageServiceImpl implements PageService {
     JSONParser parser = new JSONParser();
     JSONArray children;
     try {
-      children = (JSONArray)parser.parse(body);
+      children = (JSONArray) parser.parse(body);
       return children;
     } catch (ParseException e) {
       log.error(e);
@@ -286,13 +341,10 @@ public class PageServiceImpl implements PageService {
   private ContainerEntity clone(ContainerEntity src) {
     ContainerEntity dst = new ContainerEntity();
 
-    dst.setAccessPermissions(src.getAccessPermissions());
     dst.setDescription(src.getDescription());
     dst.setFactoryId(src.getFactoryId());
     dst.setHeight(src.getHeight());
     dst.setIcon(src.getIcon());
-    dst.setMoveAppsPermissions(src.getMoveAppsPermissions());
-    dst.setMoveContainersPermissions(src.getMoveContainersPermissions());
     dst.setName(src.getName());
     dst.setProperties(src.getProperties());
     dst.setTemplate(src.getTemplate());
@@ -303,29 +355,6 @@ public class PageServiceImpl implements PageService {
     return dst;
   }
 
-  @Override
-  public QueryResult<PageContext> findPages(int from,
-                                            int to,
-                                            SiteType siteType,
-                                            String siteName,
-                                            String pageName,
-                                            String pageTitle) {
-    PageQuery.Builder builder = new PageQuery.Builder();
-    builder.withDisplayName(pageTitle).withSiteType(convert(siteType)).withSiteName(siteName);
-    builder.withPagination(from, to - from);
-    ListAccess<PageEntity> dataSet = pageDAO.findByQuery(builder.build());
-    try {
-      ArrayList<PageContext> pages = new ArrayList<PageContext>(dataSet.getSize());
-      for (PageEntity data : dataSet.load(0, dataSet.getSize())) {
-        pages.add(data.buildPageContext());
-      }
-      return new QueryResult<PageContext>(from, dataSet.getSize(), pages);      
-    } catch (Exception ex) {      
-      LOG.error(ex);
-      return new QueryResult<PageContext>(from, 0, Collections.<PageContext>emptyList());
-    }
-  }
-  
   private org.gatein.api.site.SiteType convert(SiteType siteType) {
     if (siteType == null) {
       return null;
@@ -347,15 +376,10 @@ public class PageServiceImpl implements PageService {
     }
     PageState state = page.getState();
     if (state != null) {
-      entity.setAccessPermissions(PageEntity.convert(state.getAccessPermissions()));
       entity.setDescription(state.getDescription());
       entity.setDisplayName(state.getDisplayName());
-      entity.setEditPermission(state.getEditPermission());
       entity.setFactoryId(state.getFactoryId());
       entity.setShowMaxWindow(state.getShowMaxWindow());
-      
-      entity.setMoveAppsPermissions(PageEntity.convert(state.getMoveAppsPermissions()));
-      entity.setMoveContainersPermissions(PageEntity.convert(state.getMoveContainersPermissions()));
     }
 
     SiteKey siteKey = page.getKey().getSite();
@@ -364,5 +388,61 @@ public class PageServiceImpl implements PageService {
     entity.setName(page.getKey().getName());
 
     return entity;
+  }
+
+  private PageContext buildPageContext(PageEntity entity) {
+    List<PermissionEntity> access = permissionDAO.getPermissions(entity.getId(),
+                                                                 org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS);
+    List<String> edit = buildPermission(permissionDAO.getPermissions(entity.getId(),
+                                                                     org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.EDIT));
+    List<PermissionEntity> moveApps = permissionDAO.getPermissions(entity.getId(),
+                                                                   org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
+    List<PermissionEntity> moveConts = permissionDAO.getPermissions(entity.getId(),
+                                                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
+
+    PageState state = new PageState(entity.getDisplayName(),
+                                    entity.getDescription(),
+                                    entity.isShowMaxWindow(),
+                                    entity.getFactoryId(),
+                                    buildPermission(access),
+                                    edit.isEmpty() ? null : edit.get(0),
+                                    buildPermission(moveApps),
+                                    buildPermission(moveConts));
+
+    SiteKey siteKey = new SiteKey(entity.getOwnerType(), entity.getOwnerId());
+    PageKey pageKey = new PageKey(siteKey, entity.getName());
+
+    PageContext context = new PageContext(pageKey, state);
+    return context;
+  }
+
+  private List<String> buildPermission(List<PermissionEntity> permissions) {
+    List<String> results = new ArrayList<String>();
+
+    if (permissions != null) {
+      for (PermissionEntity per : permissions) {
+        results.add(per.getPermission());
+      }
+    }
+
+    return results;
+  }
+  
+  private void savePagePermissions(String pageId, PageContext page) {
+    PageState state = page.getState();
+    if (state != null) {
+      permissionDAO.savePermissions(pageId,
+                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS,
+                                    state.getAccessPermissions());
+      permissionDAO.savePermissions(pageId,
+                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.EDIT,
+                                    Arrays.asList(state.getEditPermission()));
+      permissionDAO.savePermissions(pageId,
+                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP,
+                                    state.getMoveAppsPermissions());
+      permissionDAO.savePermissions(pageId,
+                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER,
+                                    state.getMoveContainersPermissions());
+    }
   }
 }

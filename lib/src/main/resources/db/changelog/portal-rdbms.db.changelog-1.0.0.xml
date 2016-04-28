@@ -129,4 +129,24 @@
     </modifySql>
   </changeSet>
   
+  <changeSet author="portal" id="1.0.0-6">
+    <createTable tableName="PORTAL_PERMISSIONS">
+      <column name="PERMISSION_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_PERMISSIONS"/>
+      </column>
+      <column name="REF_ID" type="VARCHAR(200)"/>
+      <column name="PERMISSION" type="NVARCHAR(200)"/>
+      <column name="TYPE" type="INT"/>
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-7">
+      <addUniqueConstraint columnNames="REF_ID, PERMISSION, TYPE" constraintName="UK_PORTAL_PERMISSIONS"
+              tableName="PORTAL_PERMISSIONS"/>
+              
+  </changeSet>
+  
 </databaseChangeLog>

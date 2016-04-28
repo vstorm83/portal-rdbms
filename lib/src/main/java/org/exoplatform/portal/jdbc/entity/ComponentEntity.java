@@ -1,5 +1,8 @@
 package org.exoplatform.portal.jdbc.entity;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -7,14 +10,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.PrePersist;
 
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.commons.lang.StringUtils;
-import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.json.simple.JSONObject;
+
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 @Entity
 @ExoEntity
@@ -25,11 +23,6 @@ public abstract class ComponentEntity implements Serializable {
   @Id
   @Column(name = "ID", length = 200)
   private String             id;
-
-  public static final String PERMISSION_SEPARATOR = ";";
-
-  @Column(name = "ACCESS_PERMISSIONS", length = 2000)
-  private String             accessPermissions;
 
   @PrePersist
   public void ensureId() {
@@ -44,14 +37,6 @@ public abstract class ComponentEntity implements Serializable {
     this.id = id;
   }
 
-  public void setAccessPermissions(String accessPermissions) {
-    this.accessPermissions = accessPermissions;
-  }
-
-  public String getAccessPermissions() {
-    return accessPermissions;
-  }
-
   public JSONObject toJSON() {
     JSONObject obj = new JSONObject();
     obj.put("type", getType().name());
@@ -63,27 +48,5 @@ public abstract class ComponentEntity implements Serializable {
 
   public static enum TYPE {
     PAGE, CONTAINER, WINDOW
-  }
-
-  public static List<String> convert(String permissions) {
-    List<String> results = new LinkedList<String>();
-    if (permissions != null) {
-      for (String per : permissions.split(PERMISSION_SEPARATOR)) {
-        if (!per.isEmpty()) {
-          results.add(per);
-        }
-      }
-    }
-    return results;
-  }
-
-  public static String convert(List<String> permissions) {
-    StringBuilder result = new StringBuilder();
-    if (permissions != null) {
-      result.append(PERMISSION_SEPARATOR);
-      result.append(StringUtils.join(permissions, PERMISSION_SEPARATOR));
-      result.append(PERMISSION_SEPARATOR);
-    }
-    return result.toString();
   }
 }

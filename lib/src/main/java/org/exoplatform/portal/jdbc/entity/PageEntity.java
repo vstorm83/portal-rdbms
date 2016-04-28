@@ -19,6 +19,7 @@
 package org.exoplatform.portal.jdbc.entity;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.portal.mop.SiteKey;
 import org.exoplatform.portal.mop.SiteType;
 import org.exoplatform.portal.mop.page.PageContext;
@@ -75,12 +77,6 @@ public class PageEntity extends ComponentEntity implements Serializable {
   @Column(name = "PAGE_BODY", length = 5000)
   private String            pageBody = new JSONArray().toJSONString();
   
-  @Column(name = "MOVE_APP_PERMISSION", length = 2000)
-  private String                moveAppsPermissions;
-
-  @Column(name = "MOVE_CONTAINER_PERMISSION", length = 2000)
-  private String                moveContainersPermissions;
-  
   @Transient
   private List<ComponentEntity> children         = new LinkedList<ComponentEntity>();
   
@@ -98,14 +94,6 @@ public class PageEntity extends ComponentEntity implements Serializable {
 
   public void setOwnerId(String ownerId) {
     this.ownerId = ownerId;
-  }
-
-  public String getEditPermission() {
-    return editPermission;
-  }
-
-  public void setEditPermission(String editPermission) {
-    this.editPermission = editPermission;
   }
 
   public boolean isShowMaxWindow() {
@@ -156,39 +144,6 @@ public class PageEntity extends ComponentEntity implements Serializable {
     this.factoryId = factoryId;
   }
 
-  public String getMoveAppsPermissions() {
-    return moveAppsPermissions;
-  }
-
-  public void setMoveAppsPermissions(String moveAppsPermissions) {
-    this.moveAppsPermissions = moveAppsPermissions;
-  }
-
-  public String getMoveContainersPermissions() {
-    return moveContainersPermissions;
-  }
-
-  public void setMoveContainersPermissions(String moveContainersPermissions) {
-    this.moveContainersPermissions = moveContainersPermissions;
-  }
-
-  public PageContext buildPageContext() {
-    PageState state = new PageState(getDisplayName(),
-                                    getDescription(),
-                                    isShowMaxWindow(),
-                                    getFactoryId(),
-                                    convert(getAccessPermissions()),
-                                    getEditPermission(),
-                                    convert(getMoveAppsPermissions()),
-                                    convert(getMoveContainersPermissions()));
-
-    SiteKey siteKey = new SiteKey(getOwnerType(), getOwnerId());
-    PageKey pageKey = new PageKey(siteKey, getName());
-
-    PageContext context = new PageContext(pageKey, state);
-    return context;
-  }
-  
   public List<ComponentEntity> getChildren() {
     return children;
   }

@@ -66,7 +66,6 @@ public class WindowDAOTest extends AbstractKernelTest {
   
   private WindowEntity createInstance(String contentId, AppType type) {
     WindowEntity entity = new WindowEntity();
-    entity.setAccessPermissions("testAccessPermission");
     entity.setAppType(type);
     entity.setContentId(contentId);
     entity.setCustomization("testCustom".getBytes());
@@ -85,7 +84,6 @@ public class WindowDAOTest extends AbstractKernelTest {
   }
   
   private void assertContainer(WindowEntity expected, WindowEntity result) {
-    assertEquals(expected.getAccessPermissions(), result.getAccessPermissions());
     assertEquals(expected.getDescription(), result.getDescription());
     assertEquals(expected.getHeight(), result.getHeight());
     assertEquals(expected.getIcon(), result.getIcon());

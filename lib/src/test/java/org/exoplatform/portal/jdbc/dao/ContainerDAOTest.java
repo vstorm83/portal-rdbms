@@ -65,14 +65,11 @@ public class ContainerDAOTest extends AbstractKernelTest {
   
   private ContainerEntity createInstance(String name, String description) {
     ContainerEntity entity = new ContainerEntity();
-    entity.setAccessPermissions("testAccessPermission");
     entity.setContainerBody("testBody");
     entity.setDescription(description);
     entity.setFactoryId("testFactoriId");
     entity.setHeight("testHeight");
     entity.setIcon("testIcon");
-    entity.setMoveAppsPermissions("testMoveApps");
-    entity.setMoveContainersPermissions("testMoveContainers");
     entity.setName(name);
     entity.setProperties("testProps");
     entity.setTemplate("testTemplate");
@@ -82,15 +79,12 @@ public class ContainerDAOTest extends AbstractKernelTest {
   }
   
   private void assertContainer(ContainerEntity expected, ContainerEntity result) {
-    assertEquals(expected.getAccessPermissions(), result.getAccessPermissions());
     assertEquals(expected.getContainerBody(), result.getContainerBody());
     assertEquals(expected.getDescription(), result.getDescription());
     assertEquals(expected.getFactoryId(), result.getFactoryId());
     assertEquals(expected.getHeight(), result.getHeight());
     assertEquals(expected.getIcon(), result.getIcon());
     assertEquals(expected.getId(), result.getId());
-    assertEquals(expected.getMoveAppsPermissions(), result.getMoveAppsPermissions());
-    assertEquals(expected.getMoveContainersPermissions(), result.getMoveContainersPermissions());
     assertEquals(expected.getName(), result.getName());
     assertEquals(expected.getProperties(), result.getProperties());
     assertEquals(expected.getTemplate(), result.getTemplate());
