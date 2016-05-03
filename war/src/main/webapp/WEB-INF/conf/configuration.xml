@@ -49,6 +49,10 @@
     <key>org.exoplatform.portal.jdbc.dao.PermissionDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.PermissionDAOImpl</type>
   </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.DescriptionDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.DescriptionDAOImpl</type>
+  </component>
    
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
@@ -79,4 +83,16 @@
     <type>org.exoplatform.portal.mop.navigation.NavigationStoreImpl</type>
   </component>
   
+  <external-component-plugins>
+    <!-- The full qualified name of the ListenerService -->
+    <target-component>org.exoplatform.services.listener.ListenerService</target-component>
+    <component-plugin>
+      <!-- The name of the listener that is also the name of the target event -->
+      <name>org.exoplatform.portal.jdbc.entity.NodeEntity.removed</name>
+      <!-- The name of the method to call on the ListenerService in order to register the Listener -->
+      <set-method>addListener</set-method>
+      <!-- The full qualified name of the Listener -->
+      <type>org.exoplatform.portal.jdbc.service.NodeDescriptionListener</type>
+    </component-plugin>    
+  </external-component-plugins>
 </configuration>

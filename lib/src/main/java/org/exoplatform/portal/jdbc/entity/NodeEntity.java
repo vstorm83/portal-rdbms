@@ -18,6 +18,10 @@
  */
 package org.exoplatform.portal.jdbc.entity;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,14 +32,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.portal.mop.Visibility;
+import org.exoplatform.services.listener.ListenerService;
 
 @Entity
 @ExoEntity
@@ -172,5 +176,18 @@ public class NodeEntity implements Serializable {
 
   public void setParent(NodeEntity parent) {
     this.parent = parent;
+  }
+  
+  public static final String REMOVED_EVENT = "org.exoplatform.portal.jdbc.entity.NodeEntity.removed";
+  
+  @PreRemove
+  public void preRemove() throws Exception {
+    ExoContainer container = ExoContainerContext.getCurrentContainer();
+    if (container != null) {
+      ListenerService listenerService = container.getComponentInstanceOfType(ListenerService.class); 
+      if (listenerService != null) {
+        listenerService.broadcast(REMOVED_EVENT, this, this.getId());
+      }
+    }
   }
 }
