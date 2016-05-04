@@ -20,6 +20,7 @@
 package org.exoplatform.portal.mop.navigation;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -104,6 +105,15 @@ public class NavigationStoreImpl implements NavigationStore {
     NodeEntity node = nodeDAO.find(targetId);
     if (node != null) {
       NodeEntity parent = node.getParent();
+      if (parent != null) {
+        Iterator<NodeEntity> children = parent.getChildren().iterator();
+        while (children.hasNext()) {
+          if (children.next().getId().equals(node.getId())) {
+            children.remove();
+            break;
+          }
+        }
+      }
       nodeDAO.delete(node);
       return buildNodeData(parent);
     } else {
