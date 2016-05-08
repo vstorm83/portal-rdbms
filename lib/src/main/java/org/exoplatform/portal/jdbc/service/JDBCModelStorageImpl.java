@@ -20,6 +20,7 @@ package org.exoplatform.portal.jdbc.service;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import org.exoplatform.commons.utils.LazyPageList;
+import org.exoplatform.commons.utils.ListAccess;
+import org.exoplatform.portal.application.PortletPreferences;
 import org.exoplatform.portal.config.NoSuchDataException;
 import org.exoplatform.portal.config.Query;
 import org.exoplatform.portal.config.StaleModelException;
@@ -50,17 +53,24 @@ import org.exoplatform.portal.config.model.TransientApplicationState;
 import org.exoplatform.portal.jdbc.dao.ContainerDAO;
 import org.exoplatform.portal.jdbc.dao.PageDAO;
 import org.exoplatform.portal.jdbc.dao.PermissionDAO;
+import org.exoplatform.portal.jdbc.dao.SiteDAO;
 import org.exoplatform.portal.jdbc.dao.WindowDAO;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity.TYPE;
 import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
 import org.exoplatform.portal.jdbc.entity.PermissionEntity;
+import org.exoplatform.portal.jdbc.entity.SiteEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity.AppType;
 import org.exoplatform.portal.mop.SiteKey;
+import org.exoplatform.portal.mop.SiteType;
 import org.exoplatform.portal.pom.config.POMDataStorage;
+import org.exoplatform.portal.pom.config.tasks.SearchTask;
+import org.exoplatform.portal.pom.config.tasks.SearchTask.FindPortletPreferences;
 import org.exoplatform.portal.pom.data.ApplicationData;
+import org.exoplatform.portal.pom.data.BodyData;
+import org.exoplatform.portal.pom.data.BodyType;
 import org.exoplatform.portal.pom.data.ComponentData;
 import org.exoplatform.portal.pom.data.ContainerData;
 import org.exoplatform.portal.pom.data.DashboardData;
@@ -72,11 +82,14 @@ import org.exoplatform.portal.pom.data.PageData;
 import org.exoplatform.portal.pom.data.PageKey;
 import org.exoplatform.portal.pom.data.PortalData;
 import org.exoplatform.portal.pom.data.PortalKey;
+import org.exoplatform.portal.pom.data.RedirectData;
 import org.exoplatform.portal.pom.spi.portlet.Portlet;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 public class JDBCModelStorageImpl implements ModelDataStorage {
+
+  private SiteDAO        siteDAO;
 
   private PageDAO        pageDAO;
 
@@ -90,11 +103,13 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   private static Log     log = ExoLogger.getExoLogger(JDBCModelStorageImpl.class);
 
-  public JDBCModelStorageImpl(PageDAO pageDAO,
+  public JDBCModelStorageImpl(SiteDAO siteDAO,
+                              PageDAO pageDAO,
                               WindowDAO windowDAO,
                               ContainerDAO containerDAO,
                               PermissionDAO permissionDAO,
                               POMDataStorage delegate) {
+    this.siteDAO = siteDAO;
     this.pageDAO = pageDAO;
     this.windowDAO = windowDAO;
     this.containerDAO = containerDAO;
@@ -104,22 +119,52 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   @Override
   public void create(PortalData config) throws Exception {
-    delegate.create(config);
+    if (getPortalConfig(config.getKey()) != null) {
+      throw new IllegalArgumentException("Cannot create portal " + config.getName() + " that already exist");
+    }
+
+    SiteEntity entity = buildSiteEntity(null, config);
+    siteDAO.create(entity);
+    savePermissions(entity.getId(), config);
   }
 
   @Override
   public void save(PortalData config) throws Exception {
-    delegate.save(config);
+    SiteKey siteKey = new SiteKey(config.getKey().getType(), config.getKey().getId());
+    SiteEntity entity = siteDAO.findByKey(siteKey);
+    if (entity == null) {
+      throw new IllegalArgumentException("Cannot update portal " + config.getName() + " that does not exist");
+    }
+
+    entity = buildSiteEntity(entity, config);
+    siteDAO.update(entity);
+    savePermissions(entity.getId(), config);
   }
 
   @Override
   public PortalData getPortalConfig(PortalKey key) throws Exception {
-    return delegate.getPortalConfig(key);
+    SiteKey siteKey = new SiteKey(key.getType(), key.getId());
+    SiteEntity entity = siteDAO.findByKey(siteKey);
+    if (entity != null) {
+      return buildPortalData(entity);
+    } else {
+      return null;
+    }
   }
 
   @Override
   public void remove(PortalData config) throws Exception {
-    delegate.remove(config);
+    SiteKey siteKey = new SiteKey(config.getKey().getType().toUpperCase(), config.getKey().getId());
+    SiteEntity entity = siteDAO.findByKey(siteKey);
+
+    if (entity != null) {
+      String siteBody = entity.getSiteBody();
+      JSONArray children = parse(siteBody);
+      deleteChildren(children);
+
+      permissionDAO.deletePermissions(entity.getId());
+      siteDAO.delete(entity);
+    }
   }
 
   @Override
@@ -237,12 +282,60 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   @Override
   public <T> LazyPageList<T> find(Query<T> q) throws Exception {
-    return delegate.find(q);
+    return find(q, null);
   }
 
   @Override
   public <T> LazyPageList<T> find(Query<T> q, Comparator<T> sortComparator) throws Exception {
-    return delegate.find(q, sortComparator);
+    Class<T> type = q.getClassType();
+    if (PageData.class.equals(type)) {
+      throw new UnsupportedOperationException("Use PageService.findPages to instead of");
+    } else if (PortletPreferences.class.equals(type)) {
+      // this task actually return empty portlet preferences
+      FindPortletPreferences task = new SearchTask.FindPortletPreferences((Query<PortletPreferences>) q);
+      return (LazyPageList<T>) task.run(null);
+    } else if (PortalData.class.equals(type)) {
+      String ownerType = q.getOwnerType();
+      SiteType siteType = SiteType.valueOf(ownerType.toUpperCase());
+      final List<SiteEntity> results = siteDAO.findByType(siteType);
+
+      ListAccess<PortalData> la = new ListAccess<PortalData>() {
+        public PortalData[] load(int index, int length) throws Exception {
+          List<SiteEntity> entities = results.subList(index, index + length);
+          List<PortalData> data = new ArrayList<PortalData>();
+          for (SiteEntity entity : entities) {
+            data.add(buildPortalData(entity));
+          }
+          return data.toArray(new PortalData[data.size()]);
+        }
+
+        public int getSize() throws Exception {
+          return results.size();
+        }
+      };
+      return new LazyPageList(la, 10);
+    } else if (PortalKey.class.equals(type) && ("portal".equals(q.getOwnerType()) || "group".equals(q.getOwnerType()))) {
+      String ownerType = q.getOwnerType();
+      SiteType siteType = SiteType.valueOf(ownerType.toUpperCase());
+      final List<SiteKey> keys = siteDAO.findSiteKey(siteType);
+      
+      ListAccess<PortalKey> la = new ListAccess<PortalKey>() {
+        public PortalKey[] load(int index, int length) throws Exception {
+          List<PortalKey> results = new ArrayList<PortalKey>();
+          for (SiteKey key : keys.subList(index, index + length)) {
+            results.add(new PortalKey(key.getType().getName(), key.getName()));
+          }
+          return results.toArray(new PortalKey[results.size()]);
+        }
+
+        public int getSize() throws Exception {
+          return keys.size();
+        }
+      };
+      return new LazyPageList(la, 10);
+    } else {
+      throw new UnsupportedOperationException("Could not perform search on query " + q);
+    }
   }
 
   @Override
@@ -276,10 +369,12 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
     List<PermissionEntity> access = permissionDAO.getPermissions(dashboardId,
                                                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS);
 
-    List<PermissionEntity> moveApps = permissionDAO.getPermissions(dashboardId,
-                                                                   org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
-    List<PermissionEntity> moveContainers = permissionDAO.getPermissions(dashboardId,
-                                                                         org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
+    List<PermissionEntity> moveApps =
+                                    permissionDAO.getPermissions(dashboardId,
+                                                                 org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
+    List<PermissionEntity> moveContainers =
+                                          permissionDAO.getPermissions(dashboardId,
+                                                                       org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
 
     //
     JSONParser parser = new JSONParser();
@@ -340,29 +435,32 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
     JSONParser parser = new JSONParser();
     JSONArray pageBody = (JSONArray) parser.parse(entity.getPageBody());
 
-    List<PermissionEntity> moveApps = permissionDAO.getPermissions(entity.getId(),
-                                                                   org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
-    List<PermissionEntity> moveContainers = permissionDAO.getPermissions(entity.getId(),
-                                                                         org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
+    List<PermissionEntity> moveApps =
+                                    permissionDAO.getPermissions(entity.getId(),
+                                                                 org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
+    List<PermissionEntity> moveContainers =
+                                          permissionDAO.getPermissions(entity.getId(),
+                                                                       org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
 
-    PageData pageData = new PageData(entity.getId(),
-                                     entity.getId(),
-                                     entity.getName(),
-                                     null,
-                                     null,
-                                     null,
-                                     null,
-                                     null,
-                                     null,
-                                     null,
-                                     Collections.<String> emptyList(),
-                                     buildChildren(pageBody),
-                                     entity.getOwnerType().getName(),
-                                     entity.getOwnerId(),
-                                     null,
-                                     false,
-                                     buildPermission(moveApps),
-                                     buildPermission(moveContainers));
+    PageData pageData =
+                      new PageData(entity.getId(),
+                                   entity.getId(),
+                                   entity.getName(),
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   Collections.<String> emptyList(),
+                                   buildChildren(pageBody),
+                                   entity.getOwnerType().getName(),
+                                   entity.getOwnerId(),
+                                   null,
+                                   false,
+                                   buildPermission(moveApps),
+                                   buildPermission(moveContainers));
     return pageData;
   }
 
@@ -491,8 +589,11 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
           dstChild = windowDAO.find(srcChildId);
           buildWindowEntity((WindowEntity) dstChild, (ApplicationData) srcChild);
           windowDAO.update((WindowEntity) dstChild);
+        } else if (srcChild instanceof BodyData) {
+          //nothing to update on body data
+          dstChild = containerDAO.find(srcChildId);
         } else {
-          throw new StaleModelException("Was not expecting child " + srcChild);
+          log.warn("this layout component type is not supported: {}", srcChild);
         }
       } else { // create new
         if (srcChild instanceof ContainerData) {
@@ -501,8 +602,12 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
         } else if (srcChild instanceof ApplicationData) {
           dstChild = buildWindowEntity(null, (ApplicationData) srcChild);
           windowDAO.create((WindowEntity) dstChild);
+        }  else if (srcChild instanceof BodyData) {
+          dstChild = buildContainerEntity((BodyData)srcChild);
+          containerDAO.create((ContainerEntity) dstChild);
         } else {
-          throw new StaleModelException("Was not expecting child " + srcChild);
+          log.warn("this layout component type is not supported: {}", srcChild);
+//          throw new StaleModelException("Was not expecting child " + srcChild);
         }
       }
 
@@ -527,6 +632,14 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       results.add(dstChild);
     }
     return results;
+  }
+
+  private ComponentEntity buildContainerEntity(BodyData bodyData) {
+    ContainerEntity dst = new ContainerEntity();
+    JSONObject properties = new JSONObject();
+    properties.put(MappedAttributes.TYPE.getName(), bodyData.getType().name());
+    dst.setProperties(properties.toJSONString());
+    return dst;
   }
 
   private JDBCDashboardData buildDashBoard(ContainerEntity dstDashboard) {
@@ -598,12 +711,14 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
             //
             boolean showInfoBar = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_INFO_BAR.getName())));
             boolean showMode = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_MODE.getName())));
-            boolean showWindowState = Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_WINDOW_STATE.getName())));
+            boolean showWindowState =
+                                    Boolean.parseBoolean(String.valueOf(attrs.get(MappedAttributes.SHOW_WINDOW_STATE.getName())));
             String theme = (String) attrs.get(MappedAttributes.THEME.getName());
 
             //
-            List<String> accessPermissions = buildPermission(permissionDAO.getPermissions(srcContainer.getId(),
-                                                                                          org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS));
+            List<String> accessPermissions =
+                                           buildPermission(permissionDAO.getPermissions(srcContainer.getId(),
+                                                                                        org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS));
             if (accessPermissions.isEmpty()) {
               accessPermissions = Collections.singletonList(UserACL.EVERYONE);
             }
@@ -625,6 +740,9 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                                                      srcContainer.getHeight(),
                                                      Collections.<String, String> emptyMap(),
                                                      accessPermissions));
+          } else if(BodyType.PAGE.name().equals(ctype)) {
+            BodyData body = new BodyData(id, BodyType.PAGE);
+            results.add(body);
           } else {
             results.add(buildContainer(containers.get(id), jsonComponent, containers, windows));
           }
@@ -695,10 +813,12 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
     List<PermissionEntity> access = permissionDAO.getPermissions(entity.getId(),
                                                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS);
-    List<PermissionEntity> moveApps = permissionDAO.getPermissions(entity.getId(),
-                                                                   org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
-    List<PermissionEntity> moveConts = permissionDAO.getPermissions(entity.getId(),
-                                                                    org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
+    List<PermissionEntity> moveApps =
+                                    permissionDAO.getPermissions(entity.getId(),
+                                                                 org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_APP);
+    List<PermissionEntity> moveConts =
+                                     permissionDAO.getPermissions(entity.getId(),
+                                                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
 
     return new ContainerData(entity.getId(),
                              entity.getId(),
@@ -737,7 +857,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
   private ContainerEntity buildContainerEntity(ContainerEntity dst, ContainerData src) {
     if (dst == null) {
       dst = new ContainerEntity();
-    }   
+    }
     dst.setDescription(src.getDescription());
     dst.setFactoryId(src.getFactoryId());
     dst.setHeight(src.getHeight());
@@ -813,16 +933,25 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   private List<String> buildPermission(List<PermissionEntity> permissions) {
     List<String> results = new ArrayList<String>();
-    
+
     if (permissions != null) {
       for (PermissionEntity per : permissions) {
         results.add(per.getPermission());
-      }      
+      }
     }
-    
+
     return results;
   }
-  
+
+  private void savePermissions(String id, PortalData config) {
+    permissionDAO.savePermissions(id,
+                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS,
+                                  config.getAccessPermissions());
+    permissionDAO.savePermissions(id,
+                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.EDIT,
+                                  Arrays.asList(config.getEditPermission()));
+  }
+
   private void savePermissions(String id, ComponentData srcChild) {
     List<String> access = null;
     if (srcChild instanceof ContainerData) {
@@ -839,8 +968,125 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       access = srcData.getAccessPermissions();
     }
 
-    permissionDAO.savePermissions(id,
-                                  org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS,
-                                  access);
+    permissionDAO.savePermissions(id, org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS, access);
+  }
+
+  private SiteEntity buildSiteEntity(SiteEntity entity, PortalData config) throws Exception {
+    if (entity == null) {
+      entity = new SiteEntity();
+    }
+    entity.setDescription(config.getDescription());
+    entity.setLabel(config.getLabel());
+    entity.setLocale(config.getLocale());
+    entity.setName(config.getName());
+    entity.setSiteType(SiteType.valueOf(config.getKey().getType().toUpperCase()));
+    entity.setSkin(config.getSkin());
+
+    List<ComponentData> children = new ArrayList<ComponentData>();
+    children.add(config.getPortalLayout());
+
+    JSONParser parser = new JSONParser();
+    JSONArray pageBody = (JSONArray) parser.parse(entity.getSiteBody());
+    cleanDeletedComponents(pageBody, children);
+
+    List<ComponentEntity> newBody = saveChildren(children);
+
+    entity.setChildren(newBody);
+    entity.setSiteBody(((JSONArray) entity.toJSON().get("children")).toJSONString());
+
+    return entity;
+  }
+
+  private PortalData buildPortalData(SiteEntity entity) throws Exception {
+    if (entity == null) {
+      return null;
+    }
+    //
+    JSONParser parser = new JSONParser();
+    JSONArray siteBody = (JSONArray) parser.parse(entity.getSiteBody());
+    List<ComponentData> children = buildChildren(siteBody);
+    ContainerData rootContainer = null;
+    if (children.size() > 0) {
+      rootContainer = (ContainerData) children.get(0);
+    } else {
+      throw new IllegalStateException("site doens't has root container layout");
+    }
+
+    List<PermissionEntity> access = permissionDAO.getPermissions(entity.getId(),
+                                                                 org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.ACCESS);
+    List<PermissionEntity> edit = permissionDAO.getPermissions(entity.getId(),
+                                                               org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.EDIT);
+    String editPer = edit.size() > 0 ? edit.get(0).getPermission() : null;
+
+    List<RedirectData> redirects = Collections.emptyList();
+
+    Map<String, String> properties = new HashMap<String, String>();
+    try {
+      if (entity.getProperties() != null) {
+        JSONObject jProp = (JSONObject) parser.parse(entity.getProperties());
+        for (Object key : jProp.keySet()) {
+          properties.put(key.toString(), jProp.get(key).toString());
+        }        
+      }
+    } catch (Exception ex) {
+      log.error(ex);
+    }
+
+    return new PortalData(entity.getId(),
+                          entity.getName(),
+                          entity.getSiteType().getName(),
+                          entity.getLocale(),
+                          entity.getLabel(),
+                          entity.getDescription(),
+                          buildPermission(access),
+                          editPer,
+                          Collections.unmodifiableMap(properties),
+                          entity.getSkin(),
+                          rootContainer,
+                          redirects);
+  }
+
+  private JSONArray parse(String body) {
+    JSONParser parser = new JSONParser();
+    JSONArray children;
+    try {
+      children = (JSONArray) parser.parse(body);
+      return children;
+    } catch (ParseException e) {
+      log.error(e);
+      throw new IllegalStateException("Can't parse body: " + body);
+    }
+  }
+
+  private void deleteChildren(JSONArray children) {
+    for (Object child : children) {
+      JSONObject c = (JSONObject) child;
+      String id = c.get("id").toString();
+      TYPE t = TYPE.valueOf(c.get("type").toString());
+
+      if (TYPE.CONTAINER.equals(t)) {
+        JSONArray descendants = (JSONArray) c.get("children");
+        if (descendants != null) {
+          deleteChildren(descendants);
+        }
+
+        ContainerEntity container = containerDAO.find(id);
+        if (container != null) {
+          JSONArray dashboardChilds = parse(container.getContainerBody());
+          deleteChildren(dashboardChilds);
+
+          permissionDAO.deletePermissions(container.getId());
+          containerDAO.delete(container);
+        }
+      } else if (TYPE.WINDOW.equals(t)) {
+        WindowEntity window = windowDAO.find(id);
+        if (window != null) {
+          permissionDAO.deletePermissions(window.getId());
+          windowDAO.delete(window);
+        }
+      } else {
+        throw new IllegalArgumentException("Can't delete child with type: " + t);
+      }
+    }
   }
 }

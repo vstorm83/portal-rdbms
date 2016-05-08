@@ -18,7 +18,6 @@
  */
 package org.exoplatform.portal.jdbc.entity;
 
-import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,79 +36,42 @@ import org.exoplatform.portal.mop.SiteType;
 
 @Entity
 @ExoEntity
-@Table(name = "PORTAL_PAGES")
+@Table(name = "PORTAL_SITES")
 @NamedQueries({
-    @NamedQuery(name = "PageEntity.findByKey", query = "SELECT p FROM PageEntity p WHERE p.ownerType = :ownerType AND p.ownerId = :ownerId AND p.name = :name") })
-public class PageEntity extends ComponentEntity implements Serializable {
+    @NamedQuery(name = "SiteEntity.findByKey", query = "SELECT s FROM SiteEntity s WHERE s.siteType = :siteType AND s.name = :name"),
+    @NamedQuery(name = "SiteEntity.findByType", query = "SELECT s FROM SiteEntity s WHERE s.siteType = :siteType"),
+    @NamedQuery(name = "SiteEntity.findSiteKey", query = "SELECT s.name FROM SiteEntity s WHERE s.siteType = :siteType")
+})
+public class SiteEntity extends ComponentEntity {
 
-  private static final long serialVersionUID = -6195451978995765259L;
+  private static final long     serialVersionUID = 3036823700771832314L;
 
-  @Column(name = "OWNER_TYPE")
-  private SiteType          ownerType;
+  @Column(name = "TYPE")
+  private SiteType              siteType;
 
-  @Column(name = "OWNER_ID", length = 200)
-  private String            ownerId;
-
-  @Column(name = "SHOW_MAX_WINDOW")
-  private boolean           showMaxWindow;
-
-  @Column(name = "DISPLAY_NAME", length = 200)
-  private String            displayName;
-  
   @Column(name = "NAME", length = 200)
   private String                name;
-  
+
+  @Column(name = "LOCALE", length = 20)
+  private String                locale;
+
+  @Column(name = "SKIN", length = 200)
+  private String                skin;
+
+  @Column(name = "LABEL", length = 200)
+  private String                label;
+
   @Column(name = "DESCRIPTION", length = 2000)
   private String                description;
-  
-  @Column(name = "FACTORY_ID", length = 200)
-  private String                factoryId;
-  
-  @Column(name = "PAGE_BODY", length = 5000)
-  private String            pageBody = new JSONArray().toJSONString();
-  
+
+  @Column(name = "PROPERTIES", length = 2000)
+  private String                properties = new JSONObject().toJSONString();
+
+  @Column(name = "SITE_BODY", length = 5000)
+  private String                siteBody         = new JSONArray().toJSONString();
+
   @Transient
   private List<ComponentEntity> children         = new LinkedList<ComponentEntity>();
-  
-  public SiteType getOwnerType() {
-    return ownerType;
-  }
-
-  public void setOwnerType(SiteType ownerType) {
-    this.ownerType = ownerType;
-  }
-
-  public String getOwnerId() {
-    return ownerId;
-  }
-
-  public void setOwnerId(String ownerId) {
-    this.ownerId = ownerId;
-  }
-
-  public boolean isShowMaxWindow() {
-    return showMaxWindow;
-  }
-
-  public void setShowMaxWindow(boolean showMaxWindow) {
-    this.showMaxWindow = showMaxWindow;
-  }
-
-  public String getDisplayName() {
-    return displayName;
-  }
-
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
-  }
-
-  public String getPageBody() {
-    return pageBody;
-  }
-
-  public void setPageBody(String pageBody) {
-    this.pageBody = pageBody;
-  }
 
   public String getName() {
     return name;
@@ -117,6 +79,30 @@ public class PageEntity extends ComponentEntity implements Serializable {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getLocale() {
+    return locale;
+  }
+
+  public void setLocale(String locale) {
+    this.locale = locale;
+  }
+
+  public String getSkin() {
+    return skin;
+  }
+
+  public void setSkin(String skin) {
+    this.skin = skin;
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
   }
 
   public String getDescription() {
@@ -127,12 +113,20 @@ public class PageEntity extends ComponentEntity implements Serializable {
     this.description = description;
   }
 
-  public String getFactoryId() {
-    return factoryId;
+  public String getSiteBody() {
+    return siteBody;
   }
 
-  public void setFactoryId(String factoryId) {
-    this.factoryId = factoryId;
+  public void setSiteBody(String siteBody) {
+    this.siteBody = siteBody;
+  }
+
+  public SiteType getSiteType() {
+    return siteType;
+  }
+
+  public void setSiteType(SiteType siteType) {
+    this.siteType = siteType;
   }
 
   public List<ComponentEntity> getChildren() {
@@ -141,6 +135,14 @@ public class PageEntity extends ComponentEntity implements Serializable {
 
   public void setChildren(List<ComponentEntity> children) {
     this.children = children;
+  }
+
+  public String getProperties() {
+    return properties;
+  }
+
+  public void setProperties(String properties) {
+    this.properties = properties;
   }
 
   @Override
@@ -158,7 +160,7 @@ public class PageEntity extends ComponentEntity implements Serializable {
 
   @Override
   public TYPE getType() {
-    return TYPE.PAGE;
+    return TYPE.SITE;
   }
 
 }

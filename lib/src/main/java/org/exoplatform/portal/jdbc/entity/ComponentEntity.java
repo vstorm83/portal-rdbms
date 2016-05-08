@@ -1,14 +1,12 @@
 package org.exoplatform.portal.jdbc.entity;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.PrePersist;
 
 import org.json.simple.JSONObject;
 
@@ -23,11 +21,6 @@ public abstract class ComponentEntity implements Serializable {
   @Id
   @Column(name = "ID", length = 200)
   private String             id;
-
-  @PrePersist
-  public void ensureId() {
-    id = UUID.randomUUID().toString();
-  }
 
   public String getId() {
     return id;
@@ -47,6 +40,6 @@ public abstract class ComponentEntity implements Serializable {
   public abstract TYPE getType();
 
   public static enum TYPE {
-    PAGE, CONTAINER, WINDOW
+    SITE, PAGE, CONTAINER, WINDOW
   }
 }

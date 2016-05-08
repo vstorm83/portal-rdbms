@@ -27,6 +27,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
+import org.json.simple.JSONObject;
+
 import org.exoplatform.commons.api.persistence.ExoEntity;
 
 @Entity
@@ -66,7 +68,7 @@ public class WindowEntity extends ComponentEntity implements Serializable {
   private String            height;
 
   @Column(name = "PROPERTIES", length = 2000)
-  private String            properties;
+  private String            properties = new JSONObject().toJSONString();
 
   @Column(name = "APP_TYPE")
   private AppType           appType;

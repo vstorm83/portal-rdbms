@@ -67,6 +67,10 @@
     <key>org.exoplatform.portal.jdbc.dao.DescriptionDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.DescriptionDAOImpl</type>
   </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.SiteDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.SiteDAOImpl</type>
+  </component>
    
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>

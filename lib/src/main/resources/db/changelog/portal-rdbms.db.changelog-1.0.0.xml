@@ -15,7 +15,6 @@
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_PAGES" />
       </column>
-      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
       <column name="OWNER_TYPE" type="INT"/>
       <column name="OWNER_ID" type="NVARCHAR(200)"/>
       <column name="SHOW_MAX_WINDOW" type="BIT" />
@@ -23,10 +22,7 @@
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="DESCRIPTION" type="LONGTEXT" />
       <column name="FACTORY_ID" type="NVARCHAR(200)"/>
-      <column name="EDIT_PERMISSION" type="NVARCHAR(500)"/>
       <column name="PAGE_BODY" type="LONGTEXT" />
-      <column name="MOVE_APP_PERMISSION" type="LONGTEXT" />
-      <column name="MOVE_CONTAINER_PERMISSION" type="LONGTEXT" />
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
@@ -39,7 +35,6 @@
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_CONTAINERS" />
       </column>
-      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="ICON" type="NVARCHAR(200)"/>
       <column name="TEMPLATE" type="NVARCHAR(500)"/>
@@ -48,8 +43,6 @@
       <column name="DESCRIPTION" type="LONGTEXT" />
       <column name="WIDTH" type="VARCHAR(20)"/>
       <column name="HEIGHT" type="VARCHAR(20)"/>
-      <column name="MOVE_APP_PERMISSION" type="LONGTEXT" />
-      <column name="MOVE_CONTAINER_PERMISSION" type="LONGTEXT" />
       <column name="PROPERTIES" type="LONGTEXT" />
       <column name="CONTAINER_BODY" type="LONGTEXT" />
     </createTable>
@@ -64,7 +57,6 @@
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_WINDOWS" />
       </column>
-      <column name="ACCESS_PERMISSIONS" type="LONGTEXT" />
       <column name="TITLE" type="NVARCHAR(200)"/>
       <column name="ICON" type="NVARCHAR(200)"/>
       <column name="DESCRIPTION" type="LONGTEXT" />
@@ -167,6 +159,26 @@
       <column name="LOCALE" type="VARCHAR(20)"/>
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="DESCRIPTION" type="NVARCHAR(200)"/>
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-10">
+    <createTable tableName="PORTAL_SITES">
+      <column name="ID" type="VARCHAR(200)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_SITES" />
+      </column>
+      <column name="SITE_TYPE" type="INT"/>
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="LOCALE" type="VARCHAR(20)" />
+      <column name="SKIN" type="NVARCHAR(200)"/>
+      <column name="LABEL" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="PROPERTIES" type="LONGTEXT"/>
+      <column name="SITE_BODY" type="LONGTEXT" />
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
