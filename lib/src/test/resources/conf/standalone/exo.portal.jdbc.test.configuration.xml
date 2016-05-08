@@ -74,6 +74,11 @@
   </component>
   
   <component>
+    <key>org.exoplatform.portal.config.DataStorage</key>
+    <type>org.exoplatform.portal.config.DataStorageImpl</type>
+  </component>
+  
+  <component>
     <key>org.exoplatform.portal.mop.navigation.NavigationStore</key>
     <type>org.exoplatform.portal.mop.navigation.NavigationStoreImpl</type>
   </component>
