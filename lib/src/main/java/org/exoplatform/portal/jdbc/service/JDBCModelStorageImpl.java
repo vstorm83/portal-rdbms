@@ -294,8 +294,11 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       FindPortletPreferences task = new SearchTask.FindPortletPreferences((Query<PortletPreferences>) q);
       return (LazyPageList<T>) task.run(null);
     } else if (PortalData.class.equals(type)) {
-      String ownerType = q.getOwnerType();
-      SiteType siteType = SiteType.valueOf(ownerType.toUpperCase());
+      SiteType siteType = SiteType.PORTAL; 
+      String ownerType = q.getOwnerType();      
+      if (ownerType != null) {
+        siteType = SiteType.valueOf(ownerType.toUpperCase());        
+      }
       final List<SiteEntity> results = siteDAO.findByType(siteType);
 
       ListAccess<PortalData> la = new ListAccess<PortalData>() {
