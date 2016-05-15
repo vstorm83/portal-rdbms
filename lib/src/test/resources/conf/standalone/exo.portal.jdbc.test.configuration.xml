@@ -142,7 +142,7 @@
   
   <component>
     <key>org.exoplatform.application.gadget.GadgetRegistryService</key>
-    <type>org.exoplatform.portal.jdbc.service.GadgetRegistryServiceImpl</type>
+    <type>org.exoplatform.portal.jdbc.service.JDBCGadgetRegistryServiceImpl</type>
   </component>
   
   <component>

@@ -42,7 +42,7 @@ public class GadgetTokenEntity implements Serializable {
   @Column(name = "TOKEN_NAME", length = 200)
   private String            tokenName;
   
-  @Column(name = "SERVICE_NAME", length = 100)
+  @Column(name = "SERVICE_NAME", length = 500)
   private String            serviceName;
   
   @Column(name = "ACCESS_TOKEN", length = 500)

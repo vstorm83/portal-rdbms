@@ -36,7 +36,7 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @ExoEntity
 @Table(name = "PORTAL_APPLICATIONS")
  @NamedQueries({
- @NamedQuery(name = "ApplicationEntity.find", query = "SELECT app FROM ApplicationEntity app WHERE app.category.name = :name AND app.applicationName = :name") })
+ @NamedQuery(name = "ApplicationEntity.find", query = "SELECT app FROM ApplicationEntity app WHERE app.category.name = :catName AND app.applicationName = :name") })
 public class ApplicationEntity implements Serializable {
 
   private static final long serialVersionUID = 4955770436068594917L;
@@ -63,7 +63,7 @@ public class ApplicationEntity implements Serializable {
   @Column(name = "TYPE", length = 50)
   private String         type;
 
-  @Column(name = "CONTENT_ID", length = 50)
+  @Column(name = "CONTENT_ID", length = 200)
   private String         contentId;
 
   @ManyToOne(fetch = FetchType.LAZY)

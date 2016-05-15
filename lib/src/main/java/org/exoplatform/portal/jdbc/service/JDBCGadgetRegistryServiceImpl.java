@@ -14,7 +14,8 @@ import org.gatein.common.logging.LoggerFactory;
 
 import org.exoplatform.application.gadget.Gadget;
 import org.exoplatform.application.gadget.GadgetImporter;
-import org.exoplatform.application.gadget.GadgetRegistryService;
+import org.exoplatform.application.gadget.impl.GadgetRegistryServiceImpl;
+import org.exoplatform.commons.chromattic.ChromatticManager;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
@@ -23,10 +24,10 @@ import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.portal.jdbc.dao.GadgetDAO;
 import org.exoplatform.portal.jdbc.entity.GadgetEntity;
 
-public class GadgetRegistryServiceImpl implements GadgetRegistryService {
+public class JDBCGadgetRegistryServiceImpl extends GadgetRegistryServiceImpl {
 
   /** . */
-  private final Logger        log                     = LoggerFactory.getLogger(GadgetRegistryServiceImpl.class);
+  private final Logger        log                     = LoggerFactory.getLogger(JDBCGadgetRegistryServiceImpl.class);
 
   /** . */
   private static final String DEFAULT_DEVELOPER_GROUP = "/platform/administrators";
@@ -45,7 +46,8 @@ public class GadgetRegistryServiceImpl implements GadgetRegistryService {
 
   private GadgetDAO           gadgetDAO;
 
-  public GadgetRegistryServiceImpl(InitParams params, GadgetDAO gadgetDAO) {
+  public JDBCGadgetRegistryServiceImpl(InitParams params, GadgetDAO gadgetDAO) throws Exception {
+    super(new ChromatticManager(null), params);
     this.gadgetDAO = gadgetDAO;
 
     //

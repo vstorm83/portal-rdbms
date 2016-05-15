@@ -53,6 +53,26 @@
     <key>org.exoplatform.portal.jdbc.dao.DescriptionDAO</key>
     <type>org.exoplatform.portal.jdbc.dao.DescriptionDAOImpl</type>
   </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.SiteDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.SiteDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.ApplicationDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.ApplicationDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.CategoryDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.CategoryDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.GadgetDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.GadgetDAOImpl</type>
+  </component>
+  <component>
+    <key>org.exoplatform.portal.jdbc.dao.TokenDAO</key>
+    <type>org.exoplatform.portal.jdbc.dao.TokenDAOImpl</type>
+  </component>
    
   <component>
     <key>org.exoplatform.portal.pom.data.ModelDataStorage</key>
@@ -81,6 +101,33 @@
   <component>
     <key>org.exoplatform.portal.mop.navigation.NavigationStore</key>
     <type>org.exoplatform.portal.mop.navigation.NavigationStoreImpl</type>
+  </component>
+  
+  <component>
+    <key>org.exoplatform.application.registry.ApplicationRegistryService</key>
+    <type>org.exoplatform.portal.jdbc.service.JDBCApplicationRegistryService</type>
+  </component>
+  
+  <component>
+    <key>org.exoplatform.application.gadget.GadgetRegistryService</key>
+    <type>org.exoplatform.portal.jdbc.service.JDBCGadgetRegistryServiceImpl</type>
+  </component>
+  
+  <component>
+     <key>org.exoplatform.portal.gadget.core.GadgetTokenInfoService</key>
+    <type>org.exoplatform.portal.jdbc.service.GadgetTokenInfoService</type>
+    <init-params>
+      <value-param>
+        <name>cleanup.period.time</name>
+        <value>0</value>
+      </value-param>
+      <values-param>
+        <name>service.configuration</name>
+        <value>gadget-token</value>
+        <value>2</value>
+        <value>SECOND</value>
+      </values-param>
+    </init-params>
   </component>
   
   <external-component-plugins>

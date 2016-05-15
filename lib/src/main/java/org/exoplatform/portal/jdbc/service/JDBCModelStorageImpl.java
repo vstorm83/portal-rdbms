@@ -857,6 +857,9 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
   private ContainerEntity buildContainerEntity(ContainerEntity dst, ContainerData src) {
     if (dst == null) {
       dst = new ContainerEntity();
+      //we set the id in configuraton for container
+      //portal.xml, group.xml
+      dst.setId(src.getId());
     }
     dst.setDescription(src.getDescription());
     dst.setFactoryId(src.getFactoryId());

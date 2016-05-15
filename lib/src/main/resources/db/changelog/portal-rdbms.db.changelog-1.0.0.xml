@@ -171,7 +171,7 @@
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_SITES" />
       </column>
-      <column name="SITE_TYPE" type="INT"/>
+      <column name="TYPE" type="INT"/>
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="LOCALE" type="VARCHAR(20)" />
       <column name="SKIN" type="NVARCHAR(200)"/>
@@ -185,4 +185,79 @@
     </modifySql>
   </changeSet>
   
+  <changeSet author="portal" id="1.0.0-11">
+    <createTable tableName="PORTAL_APPLICATIONS">
+      <column name="ID" type="VARCHAR(200)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_APPLICATIONS" />
+      </column>
+      <column name="DISPLAY_NAME" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="CREATED_DATE" type="BIGINT"/>
+      <column name="MODIFIED_DATE" type="BIGINT"/>
+      <column name="APP_NAME" type="NVARCHAR(200)"/>
+      <column name="TYPE" type="VARCHAR(50)" />
+      <column name="CONTENT_ID" type="VARCHAR(200)" />
+      <column name="CATEGORY_ID" type="VARCHAR(200)" />      
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-12">
+    <createTable tableName="PORTAL_APP_CATEGORIES">
+      <column name="ID" type="VARCHAR(200)">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="PK_PORTAL_APP_CATEGORIES" />
+      </column>
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="DISPLAY_NAME" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />      
+      <column name="CREATED_DATE" type="BIGINT"/>
+      <column name="MODIFIED_DATE" type="BIGINT"/>      
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+  
+  <changeSet author="portal" id="1.0.0-13">
+    <createTable tableName="PORTAL_GADGETS">
+      <column name="GADGET_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_GADGETS"/>
+      </column>
+      <column name="NAME" type="NVARCHAR(200)"/>
+      <column name="URL" type="NVARCHAR(500)"/>
+      <column name="TITLE" type="NVARCHAR(200)"/>
+      <column name="DESCRIPTION" type="LONGTEXT" />
+      <column name="REF_URL" type="NVARCHAR(500)"/>
+      <column name="THUMBNAIL" type="NVARCHAR(200)"/>
+      <column name="IS_LOCAL" type="BIT"/>
+      <column name="SOURCE" type="LONGTEXT" />      
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>
+
+  <changeSet author="portal" id="1.0.0-14">
+    <createTable tableName="PORTAL_TOKENS">
+      <column name="TOKEN_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PORTAL_TOKENS"/>
+      </column>
+      <column name="USER_ID" type="NVARCHAR(100)"/>
+      <column name="GADGET_URI" type="NVARCHAR(500)"/>
+      <column name="MODULE_ID" type="BIGINT"/>
+      <column name="TOKEN_NAME" type="NVARCHAR(200)"/>
+      <column name="SERVICE_NAME" type="NVARCHAR(500)"/>
+      <column name="ACCESS_TOKEN" type="VARCHAR(500)"/>
+      <column name="TOKEN_SECRET" type="VARCHAR(500)"/>
+      <column name="SESSION_HANDLE" type="VARCHAR(500)"/>
+      <column name="EXPIRED_TIME" type="BIGINT"/>         
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci" />
+    </modifySql>
+  </changeSet>  
 </databaseChangeLog>
