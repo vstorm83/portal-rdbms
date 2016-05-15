@@ -16,11 +16,11 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @ExoEntity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class ComponentEntity implements Serializable {
-  private static final long  serialVersionUID     = 1181255637761644181L;
+  private static final long serialVersionUID = 1181255637761644181L;
 
   @Id
   @Column(name = "ID", length = 200)
-  private String             id;
+  private String            id;
 
   public String getId() {
     return id;

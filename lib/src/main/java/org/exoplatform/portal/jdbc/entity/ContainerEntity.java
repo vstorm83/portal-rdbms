@@ -37,11 +37,13 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @Entity
 @ExoEntity
 @Table(name = "PORTAL_CONTAINERS")
-@NamedQueries({
-  @NamedQuery(name = "ContainerEntity.findByIds", query = "SELECT c FROM ContainerEntity c WHERE c.id in (:ids)") })
+@NamedQueries({ @NamedQuery(name = "ContainerEntity.findByIds", query = "SELECT c FROM ContainerEntity c WHERE c.id in (:ids)") })
 public class ContainerEntity extends ComponentEntity implements Serializable {
 
   private static final long     serialVersionUID = -8045606258160322858L;
+
+  @Column(name = "WEBUI_ID", length = 200)
+  private String                webuiId;
 
   @Column(name = "NAME", length = 200)
   private String                name;
@@ -68,13 +70,21 @@ public class ContainerEntity extends ComponentEntity implements Serializable {
   private String                height;
 
   @Column(name = "PROPERTIES", length = 2000)
-  private String                properties = new JSONObject().toJSONString();
+  private String                properties       = new JSONObject().toJSONString();
 
   @Transient
   private List<ComponentEntity> children         = new LinkedList<ComponentEntity>();
-  
+
   @Column(name = "CONTAINER_BODY", length = 5000)
-  private String            containerBody = new JSONArray().toJSONString();
+  private String                containerBody    = new JSONArray().toJSONString();
+
+  public String getWebuiId() {
+    return webuiId;
+  }
+
+  public void setWebuiId(String webuiId) {
+    this.webuiId = webuiId;
+  }
 
   public String getName() {
     return name;

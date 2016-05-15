@@ -42,7 +42,6 @@ import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.application.PortletPreferences;
 import org.exoplatform.portal.config.NoSuchDataException;
 import org.exoplatform.portal.config.Query;
-import org.exoplatform.portal.config.StaleModelException;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.portal.config.model.ApplicationState;
 import org.exoplatform.portal.config.model.ApplicationType;
@@ -318,7 +317,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       String ownerType = q.getOwnerType();
       SiteType siteType = SiteType.valueOf(ownerType.toUpperCase());
       final List<SiteKey> keys = siteDAO.findSiteKey(siteType);
-      
+
       ListAccess<PortalKey> la = new ListAccess<PortalKey>() {
         public PortalKey[] load(int index, int length) throws Exception {
           List<PortalKey> results = new ArrayList<PortalKey>();
@@ -590,7 +589,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
           buildWindowEntity((WindowEntity) dstChild, (ApplicationData) srcChild);
           windowDAO.update((WindowEntity) dstChild);
         } else if (srcChild instanceof BodyData) {
-          //nothing to update on body data
+          // nothing to update on body data
           dstChild = containerDAO.find(srcChildId);
         } else {
           log.warn("this layout component type is not supported: {}", srcChild);
@@ -602,12 +601,13 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
         } else if (srcChild instanceof ApplicationData) {
           dstChild = buildWindowEntity(null, (ApplicationData) srcChild);
           windowDAO.create((WindowEntity) dstChild);
-        }  else if (srcChild instanceof BodyData) {
-          dstChild = buildContainerEntity((BodyData)srcChild);
+        } else if (srcChild instanceof BodyData) {
+          dstChild = buildContainerEntity((BodyData) srcChild);
           containerDAO.create((ContainerEntity) dstChild);
         } else {
           log.warn("this layout component type is not supported: {}", srcChild);
-//          throw new StaleModelException("Was not expecting child " + srcChild);
+          // throw new StaleModelException("Was not expecting child " +
+          // srcChild);
         }
       }
 
@@ -740,7 +740,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                                                      srcContainer.getHeight(),
                                                      Collections.<String, String> emptyMap(),
                                                      accessPermissions));
-          } else if(BodyType.PAGE.name().equals(ctype)) {
+          } else if (BodyType.PAGE.name().equals(ctype)) {
             BodyData body = new BodyData(id, BodyType.PAGE);
             results.add(body);
           } else {
@@ -821,7 +821,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                                                                   org.exoplatform.portal.jdbc.entity.PermissionEntity.TYPE.MOVE_CONTAINER);
 
     return new ContainerData(entity.getId(),
-                             entity.getId(),
+                             entity.getWebuiId(),
                              entity.getName(),
                              entity.getIcon(),
                              entity.getTemplate(),
@@ -857,10 +857,8 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
   private ContainerEntity buildContainerEntity(ContainerEntity dst, ContainerData src) {
     if (dst == null) {
       dst = new ContainerEntity();
-      //we set the id in configuraton for container
-      //portal.xml, group.xml
-      dst.setId(src.getId());
     }
+    dst.setWebuiId(src.getId());
     dst.setDescription(src.getDescription());
     dst.setFactoryId(src.getFactoryId());
     dst.setHeight(src.getHeight());
@@ -1029,7 +1027,7 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
         JSONObject jProp = (JSONObject) parser.parse(entity.getProperties());
         for (Object key : jProp.keySet()) {
           properties.put(key.toString(), jProp.get(key).toString());
-        }        
+        }
       }
     } catch (Exception ex) {
       log.error(ex);

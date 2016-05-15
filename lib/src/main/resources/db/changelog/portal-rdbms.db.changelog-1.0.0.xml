@@ -35,6 +35,7 @@
         <constraints nullable="false" primaryKey="true"
           primaryKeyName="PK_PORTAL_CONTAINERS" />
       </column>
+      <column name="WEBUI_ID" type="VARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(200)"/>
       <column name="ICON" type="NVARCHAR(200)"/>
       <column name="TEMPLATE" type="NVARCHAR(500)"/>
