@@ -52,6 +52,7 @@ import org.exoplatform.portal.config.model.TransientApplicationState;
 import org.exoplatform.portal.jdbc.dao.ContainerDAO;
 import org.exoplatform.portal.jdbc.dao.PageDAO;
 import org.exoplatform.portal.jdbc.dao.PermissionDAO;
+import org.exoplatform.portal.jdbc.dao.SettingDAO;
 import org.exoplatform.portal.jdbc.dao.SiteDAO;
 import org.exoplatform.portal.jdbc.dao.WindowDAO;
 import org.exoplatform.portal.jdbc.entity.ComponentEntity;
@@ -59,11 +60,13 @@ import org.exoplatform.portal.jdbc.entity.ComponentEntity.TYPE;
 import org.exoplatform.portal.jdbc.entity.ContainerEntity;
 import org.exoplatform.portal.jdbc.entity.PageEntity;
 import org.exoplatform.portal.jdbc.entity.PermissionEntity;
+import org.exoplatform.portal.jdbc.entity.SettingEntity;
 import org.exoplatform.portal.jdbc.entity.SiteEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity;
 import org.exoplatform.portal.jdbc.entity.WindowEntity.AppType;
 import org.exoplatform.portal.mop.SiteKey;
 import org.exoplatform.portal.mop.SiteType;
+import org.exoplatform.portal.mop.importer.Imported.Status;
 import org.exoplatform.portal.pom.config.POMDataStorage;
 import org.exoplatform.portal.pom.config.tasks.SearchTask;
 import org.exoplatform.portal.pom.config.tasks.SearchTask.FindPortletPreferences;
@@ -88,6 +91,8 @@ import org.exoplatform.services.log.Log;
 
 public class JDBCModelStorageImpl implements ModelDataStorage {
 
+  private static final String IMPORTED_STATUS = Status.class.getName();
+
   private SiteDAO        siteDAO;
 
   private PageDAO        pageDAO;
@@ -98,6 +103,8 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
 
   private PermissionDAO  permissionDAO;
 
+  private SettingDAO     settingDAO;
+
   private POMDataStorage delegate;
 
   private static Log     log = ExoLogger.getExoLogger(JDBCModelStorageImpl.class);
@@ -107,12 +114,14 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
                               WindowDAO windowDAO,
                               ContainerDAO containerDAO,
                               PermissionDAO permissionDAO,
+                              SettingDAO settingDAO,
                               POMDataStorage delegate) {
     this.siteDAO = siteDAO;
     this.pageDAO = pageDAO;
     this.windowDAO = windowDAO;
     this.containerDAO = containerDAO;
     this.permissionDAO = permissionDAO;
+    this.settingDAO = settingDAO;
     this.delegate = delegate;
   }
 
@@ -294,10 +303,10 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       FindPortletPreferences task = new SearchTask.FindPortletPreferences((Query<PortletPreferences>) q);
       return (LazyPageList<T>) task.run(null);
     } else if (PortalData.class.equals(type)) {
-      SiteType siteType = SiteType.PORTAL; 
-      String ownerType = q.getOwnerType();      
+      SiteType siteType = SiteType.PORTAL;
+      String ownerType = q.getOwnerType();
       if (ownerType != null) {
-        siteType = SiteType.valueOf(ownerType.toUpperCase());        
+        siteType = SiteType.valueOf(ownerType.toUpperCase());
       }
       final List<SiteEntity> results = siteDAO.findByType(siteType);
 
@@ -427,6 +436,37 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
   @Override
   public <A> A adapt(ModelData modelData, Class<A> type, boolean create) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Status getImportStatus() {
+    SettingEntity setting = settingDAO.findByName(IMPORTED_STATUS);
+    if (setting != null) {
+      String value = setting.getValue();
+      try {
+        return Status.getStatus(Integer.parseInt(value));
+      } catch (Exception ex) {
+        log.error("Can't parse setting value of import status", ex);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void saveImportStatus(Status status) {
+    SettingEntity setting = settingDAO.findByName(IMPORTED_STATUS);
+    if (setting == null) {
+      setting = new SettingEntity();
+      setting.setName(IMPORTED_STATUS);
+    }
+    setting.setModifiedDate(System.currentTimeMillis());
+    setting.setValue(String.valueOf(status.status()));
+    
+    if (setting.getId() == null) {
+      settingDAO.create(setting);
+    } else {
+      settingDAO.update(setting);
+    }
   }
 
   private PageData buildPageData(PageEntity entity) throws Exception {
@@ -1093,4 +1133,5 @@ public class JDBCModelStorageImpl implements ModelDataStorage {
       }
     }
   }
+
 }
